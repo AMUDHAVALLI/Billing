@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ProductSearchableSelect from '@/components/ui/ProductSearchableSelect';
 import { invoiceAPI, customerAPI, productAPI, companyAPI } from '@/lib/api';
 
 export default function EditInvoicePage({ params }) {
@@ -75,10 +76,7 @@ export default function EditInvoicePage({ params }) {
     }
   };
 
-  const handleProductSelect = (e) => {
-    const productId = e.target.value;
-    const product = products.find(p => p.id === productId);
-    
+  const handleProductSelect = (product) => {
     if (product) {
       setNewItem({
         productId: product.id,
@@ -234,19 +232,11 @@ export default function EditInvoicePage({ params }) {
               
               <div className="grid grid-cols-6 gap-4 mb-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Product
-                  </label>
-                  <select
+                  <ProductSearchableSelect
+                    products={products}
                     value={newItem.productId}
-                    onChange={handleProductSelect}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">Select Product</option>
-                    {products.map(product => (
-                      <option key={product.id} value={product.id}>{product.name}</option>
-                    ))}
-                  </select>
+                    onSelect={handleProductSelect}
+                  />
                 </div>
 
                 <Input

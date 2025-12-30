@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id            String    @id @default(uuid())
+  name          String
+  address       String
+  city          String
+  state         String
+  pincode       String
+  gstin         String    @unique
+  pan           String?
+  contact       String
+  email         String
+  phone         String
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  branch        String?
+  logo          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  invoices      Invoice[]
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  state     String
+  stateCode String
+  gstin     String?
+  contact   String?
+  email     String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invoices  Invoice[]
+
+  @@index([name])
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  hsnCode     String
+  unit        String        @default("NOS")
+  basePrice   Float
+  gstRate     Float
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  invoiceItems InvoiceItem[]
+
+  @@index([name])
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique
+  date          DateTime      @default(now())
+  companyId     String
+  customerId    String
+  subtotal      Float
+  cgst          Float         @default(0)
+  sgst          Float         @default(0)
+  igst          Float         @default(0)
+  roundOff      Float         @default(0)
+  total         Float
+  status        String        @default("draft")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  company       Company       @relation(fields: [companyId], references: [id])
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  items         InvoiceItem[]
+
+  @@index([invoiceNumber])
+  @@index([date])
+}
+
+model InvoiceItem {
+  id         String  @id @default(uuid())
+  invoiceId  String
+  productId  String
+  description String
+  hsnCode    String
+  quantity   Float
+  unit       String
+  rate       Float
+  amount     Float
+  gstRate    Float
+  gstAmount  Float
+  
+  invoice    Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId])
+}

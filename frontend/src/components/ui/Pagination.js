@@ -26,7 +26,7 @@ export default function Pagination({
     return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
   };
 
-  if (totalPages <= 1) return null;
+  // if (totalPages <= 1) return null; // Removed to always show the summary
 
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg shadow-sm mt-4">
@@ -56,8 +56,9 @@ export default function Pagination({
             of <span className="font-medium">{totalItems}</span> results
           </p>
         </div>
-        <div>
-          <nav className="relative z-0 inline-flex shadow-sm -space-x-px" aria-label="Pagination">
+        {totalPages > 1 && (
+          <div>
+            <nav className="relative z-0 inline-flex shadow-sm -space-x-px" aria-label="Pagination">
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -100,8 +101,9 @@ export default function Pagination({
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
             </button>
-          </nav>
-        </div>
+            </nav>
+          </div>
+        )}
       </div>
     </div>
   );

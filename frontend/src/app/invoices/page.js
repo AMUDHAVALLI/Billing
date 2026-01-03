@@ -20,8 +20,8 @@ export default function InvoicesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    fetchInvoices(pagination.page, search);
-  }, [pagination.page, debouncedSearch]);
+    fetchInvoices(pagination.page, search, pagination.limit);
+  }, [pagination.page, debouncedSearch, pagination.limit]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,12 +31,12 @@ export default function InvoicesPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchInvoices = async (page = 1, searchQuery = '') => {
+  const fetchInvoices = async (page = 1, searchQuery = '', limit = pagination.limit) => {
     setLoading(true);
     try {
       const response = await invoiceAPI.getAll({ 
         page, 
-        limit: pagination.limit,
+        limit: limit,
         search: searchQuery 
       });
       setInvoices(response.data.invoices || response.data);
@@ -55,11 +55,9 @@ export default function InvoicesPage() {
       const response = await invoiceAPI.downloadPDF(invoice.id);
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `invoice-${invoice.invoiceNumber}.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
+      window.open(url, '_blank');
+      // link.click(); // Removed to allow preview
+      // window.URL.revokeObjectURL(url); // Don't revoke yet so preview works
     } catch (error) {
       console.error('Failed to download PDF:', error);
     }
@@ -87,16 +85,31 @@ export default function InvoicesPage() {
       accessor: (row) => row.customer?.name || 'N/A'
     },
     { 
-      header: 'Amount',
-      accessor: (row) => `₹${row.total.toLocaleString('en-IN')}`
+      header: 'Subtotal',
+      accessor: (row) => `₹${row.subtotal.toLocaleString('en-IN')}`
+    },
+    { 
+      header: 'Tax',
+      accessor: (row) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-700">₹{(row.cgst + row.sgst + row.igst).toLocaleString('en-IN')}</span>
+          <span className="text-[10px] text-gray-500">
+            {row.igst > 0 ? 'IGST' : 'CGST+SGST'}
+          </span>
+        </div>
+      )
+    },
+    { 
+      header: 'Total',
+      accessor: (row) => <span className="font-bold text-primary-700 text-base">₹{row.total.toLocaleString('en-IN')}</span>
     },
     { 
       header: 'Status',
       accessor: (row) => (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          row.status === 'paid' ? 'bg-green-100 text-green-800' :
-          row.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-          'bg-gray-100 text-gray-800'
+        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+          row.status === 'paid' ? 'bg-green-100 text-green-800 border border-green-200' :
+          row.status === 'sent' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+          'bg-gray-100 text-gray-800 border border-gray-200'
         }`}>
           {row.status.toUpperCase()}
         </span>
@@ -113,7 +126,7 @@ export default function InvoicesPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Invoices</h1>
-              <p className="text-gray-600">View and manage all invoices</p>
+      <p className="text-gray-600">View and manage all your invoices and company details</p>
             </div>
             <Link href="/invoices/create">
               <Button>+ Create Invoice</Button>
@@ -121,19 +134,38 @@ export default function InvoicesPage() {
           </div>
 
           <div className="mb-6">
-            <div className="relative max-w-md">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search invoices by number..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
-              />
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative max-w-md flex-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search invoices by number..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pagination.limit}
+                  onChange={(e) => {
+                    const newLimit = parseInt(e.target.value);
+                    setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }));
+                  }}
+                  className="border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                >
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -143,7 +175,7 @@ export default function InvoicesPage() {
             </div>
           ) : (
             <>
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-primary-600 to-primary-700">
                     <tr>
@@ -168,25 +200,37 @@ export default function InvoicesPage() {
                             {column.accessor ? column.accessor(invoice) : invoice[column.key]}
                           </td>
                         ))}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                          <Link
-                            href={`/invoices/edit/${invoice.id}`}
-                            className="text-indigo-600 hover:text-indigo-900 font-semibold"
-                          >
-                            Edit
-                          </Link>
-                          <button
-                            onClick={() => handleDownloadPDF(invoice)}
-                            className="text-primary-600 hover:text-primary-900 font-semibold"
-                          >
-                            📥 PDF
-                          </button>
-                          <button
-                            onClick={() => handleDelete(invoice)}
-                            className="text-red-600 hover:text-red-900 font-semibold"
-                          >
-                            Delete
-                          </button>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/invoices/${invoice.id}`}
+                              className="inline-flex items-center px-2 py-1.5 text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors text-xs font-bold"
+                              title="View Details"
+                            >
+                              👁️ View
+                            </Link>
+                            <Link
+                              href={`/invoices/edit/${invoice.id}`}
+                              className="inline-flex items-center px-2 py-1.5 text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 transition-colors text-xs font-bold"
+                              title="Edit Invoice"
+                            >
+                              ✏️ Edit
+                            </Link>
+                            <button
+                              onClick={() => handleDownloadPDF(invoice)}
+                              className="inline-flex items-center px-2 py-1.5 text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 transition-colors text-xs font-bold"
+                              title="Download PDF"
+                            >
+                              📥 PDF
+                            </button>
+                            <button
+                              onClick={() => handleDelete(invoice)}
+                              className="inline-flex items-center px-2 py-1.5 text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors text-xs font-bold"
+                              title="Delete Invoice"
+                            >
+                              🗑️ Del
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

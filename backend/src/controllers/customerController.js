@@ -3,8 +3,10 @@ import prisma from '../config/database.js';
 // Get all customers with pagination and search
 export async function getCustomers(req, res) {
   try {
-    const { search, page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
+    const { search, page, limit } = req.query;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
 
     const where = search
       ? {
@@ -18,9 +20,8 @@ export async function getCustomers(req, res) {
 
     const [customers, total] = await Promise.all([
       prisma.customer.findMany({
-        where,
-        skip: parseInt(skip),
-        take: parseInt(limit),
+        skip: skip,
+        take: limitNum,
         orderBy: { createdAt: 'desc' }
       }),
       prisma.customer.count({ where })
@@ -30,9 +31,9 @@ export async function getCustomers(req, res) {
       customers,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.max(1, Math.ceil(total / limitNum))
       }
     });
   } catch (error) {

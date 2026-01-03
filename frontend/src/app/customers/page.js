@@ -34,8 +34,8 @@ export default function CustomersPage() {
   });
 
   useEffect(() => {
-    fetchCustomers(pagination.page, search);
-  }, [pagination.page, debouncedSearch]);
+    fetchCustomers(pagination.page, search, pagination.limit);
+  }, [pagination.page, debouncedSearch, pagination.limit]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,12 +45,12 @@ export default function CustomersPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchCustomers = async (page = 1, searchQuery = '') => {
+  const fetchCustomers = async (page = 1, searchQuery = '', limit = pagination.limit) => {
     setLoading(true);
     try {
       const response = await customerAPI.getAll({ 
         page, 
-        limit: pagination.limit,
+        limit: limit,
         search: searchQuery 
       });
       setCustomers(response.data.customers || response.data);
@@ -142,19 +142,38 @@ export default function CustomersPage() {
           </div>
 
           <div className="mb-6">
-            <div className="relative max-w-md">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search customers by name, email, or phone..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
-              />
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative max-w-md flex-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search customers by name, email, or phone..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
+                />
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pagination.limit}
+                  onChange={(e) => {
+                    const newLimit = parseInt(e.target.value);
+                    setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }));
+                  }}
+                  className="border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                >
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
+              </div>
             </div>
           </div>
 

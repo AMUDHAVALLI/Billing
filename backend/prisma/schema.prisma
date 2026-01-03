@@ -13,6 +13,7 @@ model Company {
   address       String
   city          String
   state         String
+  stateCode     String    @default("34")
   pincode       String
   gstin         String    @unique
   pan           String?

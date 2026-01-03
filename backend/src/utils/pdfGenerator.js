@@ -84,7 +84,7 @@ export async function generateInvoicePDF(invoice, company, customer) {
       companyY += 12;
       
       doc.text('State Name', companyLeftX, companyY);
-      doc.text(`: ${company.state}, Code : 34`, valueX, companyY); 
+      doc.text(`: ${company.state}, Code : ${company.stateCode || 'N/A'}`, valueX, companyY); 
       companyY += 12;
       
       doc.text('Contact', companyLeftX, companyY);
@@ -116,7 +116,7 @@ export async function generateInvoicePDF(invoice, company, customer) {
       
       // Quadrant 2
       doc.font('Helvetica').text('Dated', midRightX + 5, rightBoxY + 5);
-      doc.font('Helvetica-Bold').text(new Date(invoice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }), midRightX + 5, rightBoxY + 18);
+      doc.font('Helvetica-Bold').text(new Date(invoice.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), midRightX + 5, rightBoxY + 18);
 
       // Quadrant 3
       doc.font('Helvetica').text('Buyer\'s Order No.', splitX + 5, 80);

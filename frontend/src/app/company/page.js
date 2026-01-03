@@ -14,6 +14,7 @@ export default function CompanyPage() {
     address: '',
     city: '',
     state: '',
+    stateCode: '',
     pincode: '',
     gstin: '',
     pan: '',
@@ -100,6 +101,7 @@ export default function CompanyPage() {
                 <InfoRow label="Address" value={company.address} />
                 <InfoRow label="City" value={company.city} />
                 <InfoRow label="State" value={company.state} />
+                <InfoRow label="State Code" value={company.stateCode} />
                 <InfoRow label="Pincode" value={company.pincode} />
                 <InfoRow label="GSTIN" value={company.gstin} />
                 <InfoRow label="PAN" value={company.pan} />
@@ -149,6 +151,12 @@ export default function CompanyPage() {
                       label="State"
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                      required
+                    />
+                    <Input
+                      label="State Code"
+                      value={formData.stateCode}
+                      onChange={(e) => setFormData({ ...formData, stateCode: e.target.value })}
                       required
                     />
                     <Input

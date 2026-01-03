@@ -1,25 +1,43 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
-import { invoiceAPI } from '@/lib/api';
+import { invoiceAPI, companyAPI } from '@/lib/api';
 import Link from 'next/link';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    fetchData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
-      const response = await invoiceAPI.getDashboardStats();
-      setStats(response.data);
+      const [statsRes, companyRes] = await Promise.all([
+        invoiceAPI.getDashboardStats(),
+        companyAPI.getAll()
+      ]);
+      setStats(statsRes.data);
+      if (companyRes.data && companyRes.data.length > 0) {
+        setCompany(companyRes.data[0]);
+      }
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = async (invoice) => {
+    try {
+      const response = await invoiceAPI.downloadPDF(invoice.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
     }
   };
 
@@ -74,41 +92,107 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Recent Invoices */}
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Recent Invoices</h2>
-              <Link
-                href="/invoices"
-                className="text-primary-600 hover:text-primary-800 font-semibold"
-              >
-                View All →
-              </Link>
-            </div>
-            
-            {stats?.recentInvoices?.length > 0 ? (
-              <div className="space-y-4">
-                {stats.recentInvoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:border-primary-400 transition-all card-hover"
-                  >
-                    <div>
-                      <p className="font-semibold text-gray-900">{invoice.invoiceNumber}</p>
-                      <p className="text-sm text-gray-600">{invoice.customer.name}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900">₹{invoice.total.toLocaleString('en-IN')}</p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(invoice.date).toLocaleDateString('en-IN')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Company Info Card */}
+            <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Company Details</h2>
+                <Link
+                  href="/company"
+                  className="text-primary-600 hover:text-primary-800 font-semibold"
+                >
+                  Edit Settings
+                </Link>
               </div>
-            ) : (
-              <p className="text-center text-gray-500 py-8">No invoices yet</p>
-            )}
+              
+              {company ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                    <span className="text-gray-600">Company Name:</span>
+                    <span className="font-bold text-gray-900">{company.name}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                    <span className="text-gray-600">GSTIN:</span>
+                    <span className="text-gray-900">{company.gstin}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                    <span className="text-gray-600">State:</span>
+                    <span className="text-gray-900">{company.state} (Code: {company.stateCode})</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                    <span className="text-gray-600">Email:</span>
+                    <span className="text-gray-900">{company.email}</span>
+                  </div>
+                  <div className="mt-4 pt-2 text-sm text-gray-500 italic">
+                    {company.address}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">No company details set up yet</p>
+                  <Link href="/company">
+                    <Button variant="primary">Set Up Company</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Recent Invoices */}
+            <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Recent Invoices</h2>
+                <Link
+                  href="/invoices"
+                  className="text-primary-600 hover:text-primary-800 font-semibold"
+                >
+                  View All →
+                </Link>
+              </div>
+              
+              {stats?.recentInvoices?.length > 0 ? (
+                <div className="space-y-4">
+                  {stats.recentInvoices.map((invoice) => (
+                    <div
+                      key={invoice.id}
+                      className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:border-primary-400 transition-all card-hover"
+                    >
+                      <Link href={`/invoices/${invoice.id}`} className="flex-1 cursor-pointer">
+                        <div>
+                          <p className="font-semibold text-gray-900">{invoice.invoiceNumber}</p>
+                          <p className="text-sm text-gray-600">{invoice.customer.name}</p>
+                        </div>
+                      </Link>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right mr-4 border-r pr-4 border-gray-100">
+                          <p className="font-bold text-gray-900">₹{invoice.total.toLocaleString('en-IN')}</p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(invoice.date).toLocaleDateString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Link
+                            href={`/invoices/edit/${invoice.id}`}
+                            className="inline-flex items-center justify-center px-3 py-1 text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md hover:bg-indigo-100 transition-colors text-xs font-bold"
+                            title="Edit Invoice"
+                          >
+                            ✏️ Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDownloadPDF(invoice)}
+                            className="inline-flex items-center justify-center px-3 py-1 text-primary-600 bg-primary-50 border border-primary-100 rounded-md hover:bg-primary-100 transition-colors text-xs font-bold"
+                            title="Download PDF"
+                          >
+                            📥 PDF
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No invoices yet</p>
+              )}
+            </div>
           </div>
 
           {/* Quick Actions */}

@@ -5,8 +5,10 @@ import { generateInvoicePDF } from '../utils/pdfGenerator.js';
 // Get all invoices with pagination and filtering
 export async function getInvoices(req, res) {
   try {
-    const { search, status, page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
+    const { search, status, page, limit } = req.query;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
 
     const where = {};
     if (search) {
@@ -19,8 +21,8 @@ export async function getInvoices(req, res) {
     const [invoices, total] = await Promise.all([
       prisma.invoice.findMany({
         where,
-        skip: parseInt(skip),
-        take: parseInt(limit),
+        skip: skip,
+        take: limitNum,
         include: {
           customer: true,
           company: true,
@@ -39,9 +41,9 @@ export async function getInvoices(req, res) {
       invoices,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.max(1, Math.ceil(total / limitNum))
       }
     });
   } catch (error) {
@@ -92,7 +94,15 @@ export async function createInvoice(req, res) {
     }
 
     // Calculate GST
-    const calculation = calculateGST(items, company.state, customer.state);
+    const calculation = calculateGST(
+      items, 
+      company.state, 
+      customer.state, 
+      company.stateCode, 
+      customer.stateCode,
+      company.gstin,
+      customer.gstin
+    );
 
     // Generate invoice number (format: YYYYMM-XXX)
     const now = new Date();
@@ -171,58 +181,69 @@ export async function updateInvoice(req, res) {
       invoiceData.date = parsedDate;
     }
 
-    // If items are being updated, recalculate GST
-    if (items) {
-      const invoice = await prisma.invoice.findUnique({
-        where: { id },
-        include: { company: true, customer: true }
-      });
+    // Fetch existing invoice to get current company/customer/items if not provided
+    const existingInvoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: { items: true }
+    });
 
-      const calculation = calculateGST(items, invoice.company.state, invoice.customer.state);
-
-      // Delete old items and create new ones
-      await prisma.invoiceItem.deleteMany({
-        where: { invoiceId: id }
-      });
-
-      const updatedInvoice = await prisma.invoice.update({
-        where: { id },
-        data: {
-          ...invoiceData,
-          subtotal: calculation.subtotal,
-          cgst: calculation.cgst,
-          sgst: calculation.sgst,
-          igst: calculation.igst,
-          roundOff: calculation.roundOff,
-          total: calculation.total,
-          items: {
-            create: calculation.items.map(item => ({
-              productId: item.productId,
-              description: item.description,
-              hsnCode: item.hsnCode,
-              quantity: item.quantity,
-              unit: item.unit,
-              rate: item.rate,
-              amount: item.amount,
-              gstRate: item.gstRate,
-              gstAmount: item.gstAmount
-            }))
-          }
-        },
-        include: {
-          items: true,
-          customer: true,
-          company: true
-        }
-      });
-
-      return res.json(updatedInvoice);
+    if (!existingInvoice) {
+      return res.status(404).json({ error: 'Invoice not found' });
     }
 
-    // Update only invoice data (status, date, etc.)
+    const companyId = invoiceData.companyId || existingInvoice.companyId;
+    const customerId = invoiceData.customerId || existingInvoice.customerId;
+    const finalItems = items || existingInvoice.items;
+
+    // Fetch latest company and customer details to ensure correct state/GSTIN
+    const [latestCompany, latestCustomer] = await Promise.all([
+      prisma.company.findUnique({ where: { id: companyId } }),
+      prisma.customer.findUnique({ where: { id: customerId } })
+    ]);
+
+    if (!latestCompany || !latestCustomer) {
+      return res.status(404).json({ error: 'Company or Customer not found' });
+    }
+
+    const calculation = calculateGST(
+      finalItems, 
+      latestCompany.state, 
+      latestCustomer.state,
+      latestCompany.stateCode,
+      latestCustomer.stateCode,
+      latestCompany.gstin,
+      latestCustomer.gstin
+    );
+
+    // Delete old items and create new ones (syncs all calculations)
+    await prisma.invoiceItem.deleteMany({
+      where: { invoiceId: id }
+    });
+
     const updatedInvoice = await prisma.invoice.update({
       where: { id },
-      data: invoiceData,
+      data: {
+        ...invoiceData,
+        subtotal: calculation.subtotal,
+        cgst: calculation.cgst,
+        sgst: calculation.sgst,
+        igst: calculation.igst,
+        roundOff: calculation.roundOff,
+        total: calculation.total,
+        items: {
+          create: calculation.items.map(item => ({
+            productId: item.productId,
+            description: item.description,
+            hsnCode: item.hsnCode,
+            quantity: item.quantity,
+            unit: item.unit,
+            rate: item.rate,
+            amount: item.amount,
+            gstRate: item.gstRate,
+            gstAmount: item.gstAmount
+          }))
+        }
+      },
       include: {
         items: true,
         customer: true,
@@ -270,7 +291,7 @@ export async function downloadInvoicePDF(req, res) {
     const pdfBuffer = await generateInvoicePDF(invoice, invoice.company, invoice.customer);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=invoice-${invoice.invoiceNumber}.pdf`);
+    res.setHeader('Content-Disposition', `inline; filename=invoice-${invoice.invoiceNumber}.pdf`);
     res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });

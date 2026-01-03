@@ -1,11 +1,17 @@
+import { areStatesSame } from './stateMapping.js';
+
 /**
  * Calculate GST for invoice items
- * @param {Array} items - Array of invoice items with rate, quantity, gstRate
- * @param {string} companyState - Company's state
- * @param {string} customerState - Customer's state
- * @returns {Object} - Calculated GST breakdown
+ * @param {Array} items - Array of invoice items
+ * @param {string} companyState - Company state name
+ * @param {string} customerState - Customer state name
+ * @param {string} companyStateCode - Company state code
+ * @param {string} customerStateCode - Customer state code
+ * @param {string} companyGSTIN - Company GSTIN
+ * @param {string} customerGSTIN - Customer GSTIN
+ * @returns {Object} - GST calculation details
  */
-export function calculateGST(items, companyState, customerState) {
+export function calculateGST(items, companyState, customerState, companyStateCode, customerStateCode, companyGSTIN = '', customerGSTIN = '') {
   let subtotal = 0;
   let totalCGST = 0;
   let totalSGST = 0;
@@ -26,10 +32,7 @@ export function calculateGST(items, companyState, customerState) {
   });
 
   // Determine if intra-state or inter-state
-  // Normalize states by trimming whitespace and converting to lowercase for accurate comparison
-  const normalizedCompanyState = (companyState || '').trim().toLowerCase();
-  const normalizedCustomerState = (customerState || '').trim().toLowerCase();
-  const isIntraState = normalizedCompanyState === normalizedCustomerState;
+  const isIntraState = areStatesSame(companyState, customerState, companyStateCode, customerStateCode, companyGSTIN, customerGSTIN);
 
   if (isIntraState) {
     // CGST + SGST for intra-state transactions

@@ -478,3 +478,52 @@ export async function getHsnReport(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+// Get tax report (month wise bill based)
+export async function getTaxReport(req, res) {
+  try {
+    const { month, year } = req.query;
+    if (!month || !year) {
+      return res.status(400).json({ error: 'Month and year are required' });
+    }
+
+    const searchYear = parseInt(year);
+    const searchMonth = parseInt(month) - 1; // JS months are 0-indexed
+    const startDate = new Date(searchYear, searchMonth, 1);
+    const endDate = new Date(searchYear, searchMonth + 1, 1);
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: {
+        customer: true,
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+
+    const report = invoices.map((inv) => ({
+      id: inv.id,
+      invoiceNumber: inv.invoiceNumber,
+      date: inv.date,
+      customerName: inv.customer.name,
+      customerGstin: inv.customer.gstin || 'N/A',
+      subtotal: inv.subtotal,
+      cgst: inv.cgst,
+      sgst: inv.sgst,
+      igst: inv.igst,
+      totalTax: inv.cgst + inv.sgst + inv.igst,
+      total: inv.total,
+    }));
+
+    res.json(report);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+

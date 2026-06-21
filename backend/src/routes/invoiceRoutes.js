@@ -9,7 +9,8 @@ import {
   getDashboardStats,
   getMonthlyReport,
   getYearlyReport,
-  getHsnReport
+  getHsnReport,
+  getTaxReport
 } from '../controllers/invoiceController.js';
 
 const router = express.Router();
@@ -25,5 +26,7 @@ router.delete('/:id', deleteInvoice);
 router.get('/reports/monthly', getMonthlyReport);
 router.get('/reports/yearly', getYearlyReport);
 router.get('/reports/hsn', getHsnReport);
+router.get('/reports/tax', getTaxReport);
+
 
 export default router;

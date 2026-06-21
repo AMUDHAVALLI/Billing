@@ -48,6 +48,8 @@ export const invoiceAPI = {
   getMonthlyReport: (year) => api.get('/invoices/reports/monthly', { params: { year } }),
   getYearlyReport: () => api.get('/invoices/reports/yearly'),
   getHsnReport: (month, year) => api.get('/invoices/reports/hsn', { params: { month, year } }),
+  getTaxReport: (month, year) => api.get('/invoices/reports/tax', { params: { month, year } }),
 };
+
 
 export default api;

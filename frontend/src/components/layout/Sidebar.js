@@ -13,8 +13,10 @@ export default function Sidebar() {
     { name: 'Monthly Report', href: '/reports/monthly', icon: '📅' },
     { name: 'Yearly Report', href: '/reports/yearly', icon: '📈' },
     { name: 'HSN Report', href: '/reports/hsn', icon: '🧾' },
+    { name: 'Tax Report', href: '/reports/tax', icon: '💸' },
     { name: 'Company', href: '/company', icon: '🏢' },
   ];
+
 
   return (
     <>

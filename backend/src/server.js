@@ -32,10 +32,12 @@ app.get('/health', (req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📊 API Documentation available at http://localhost:${PORT}/health`);
-});
+// Start server only in local development (not in Vercel serverless)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`📊 API Documentation available at http://localhost:${PORT}/health`);
+  });
+}
 
 export default app;

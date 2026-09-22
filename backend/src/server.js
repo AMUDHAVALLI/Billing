@@ -5,6 +5,7 @@ import companyRoutes from './routes/companyRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
+import cashBillRoutes from './routes/cashBillRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -23,6 +24,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/cash-bills', cashBillRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

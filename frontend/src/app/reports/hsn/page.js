@@ -136,8 +136,8 @@ export default function HsnReport() {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <table className="w-full text-left">
+            <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-xl border border-gray-100">
+              <table className="w-full min-w-[700px] text-left">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">HSN Code</th>

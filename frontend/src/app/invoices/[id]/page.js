@@ -128,16 +128,16 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* Items Table */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
+            <table className="w-full min-w-[700px] divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">HSN</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">Qty</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Rate</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Rate (₹)</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">GST %</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Amount (₹)</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

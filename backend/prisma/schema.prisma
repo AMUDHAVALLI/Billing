@@ -105,3 +105,32 @@ model InvoiceItem {
 
   @@index([invoiceId])
 }
+
+model CashBill {
+  id         String         @id @default(uuid())
+  billNumber String         @unique
+  date       DateTime       @default(now())
+  clientName String
+  total      Float
+  status     String         @default("paid")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  items      CashBillItem[]
+
+  @@index([billNumber])
+  @@index([date])
+}
+
+model CashBillItem {
+  id          String   @id @default(uuid())
+  cashBillId  String
+  particulars String
+  quantity    Float
+  rate        Float
+  amount      Float
+
+  cashBill    CashBill @relation(fields: [cashBillId], references: [id], onDelete: Cascade)
+
+  @@index([cashBillId])
+}
+

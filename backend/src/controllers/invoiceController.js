@@ -12,7 +12,10 @@ export async function getInvoices(req, res) {
 
     const where = {};
     if (search) {
-      where.invoiceNumber = { contains: search, mode: 'insensitive' };
+      where.OR = [
+        { invoiceNumber: { contains: search, mode: 'insensitive' } },
+        { customer: { name: { contains: search, mode: 'insensitive' } } }
+      ];
     }
     if (status) {
       where.status = status;

@@ -51,5 +51,15 @@ export const invoiceAPI = {
   getTaxReport: (month, year) => api.get('/invoices/reports/tax', { params: { month, year } }),
 };
 
+// Cash Bill API
+export const cashBillAPI = {
+  getAll: (params) => api.get('/cash-bills', { params }),
+  getById: (id) => api.get(`/cash-bills/${id}`),
+  create: (data) => api.post('/cash-bills', data),
+  update: (id, data) => api.put(`/cash-bills/${id}`, data),
+  delete: (id) => api.delete(`/cash-bills/${id}`),
+  downloadPDF: (id) => api.get(`/cash-bills/${id}/pdf`, { responseType: 'blob' }),
+};
 
 export default api;
+

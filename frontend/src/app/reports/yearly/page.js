@@ -77,8 +77,8 @@ export default function YearlyReport() {
               )}
 
               {/* Data Table */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <table className="w-full text-left">
+              <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-xl border border-gray-100">
+                <table className="w-full min-w-[700px] text-left">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Year</th>

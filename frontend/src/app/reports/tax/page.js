@@ -191,9 +191,8 @@ export default function TaxReport() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left whitespace-nowrap">
+            <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-xl border border-gray-100">
+              <table className="w-full min-w-[950px] text-left whitespace-nowrap">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Invoice No.</th>
@@ -253,7 +252,6 @@ export default function TaxReport() {
                     </tfoot>
                   )}
                 </table>
-              </div>
             </div>
           )}
         </div>

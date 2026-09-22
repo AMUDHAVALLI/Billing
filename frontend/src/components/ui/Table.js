@@ -1,7 +1,7 @@
 export default function Table({ columns, data, onEdit, onDelete }) {
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="w-full max-w-full overflow-x-auto rounded-xl shadow-md bg-white border border-gray-200">
+      <table className="w-full min-w-[750px] divide-y divide-gray-200">
         <thead className="bg-gradient-to-r from-primary-600 to-primary-700">
           <tr>
             {columns.map((column, index) => (

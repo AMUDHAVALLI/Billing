@@ -40,21 +40,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #94a3b8;
 }
 
-/* Smooth animations */
-* {
-  transition: all 0.2s ease-in-out;
-}
-
-button, a {
-  transition: all 0.15s ease-in-out;
+/* Specific interactive transitions */
+button, a, input, select, textarea, .hover-transition {
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 
 /* Glass morphism effect */

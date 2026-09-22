@@ -30,7 +30,7 @@ export default function YearlyReport() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Yearly Report</h1>

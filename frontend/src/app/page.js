@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
+import DashboardBanner from '@/components/layout/DashboardBanner';
 import Button from '@/components/ui/Button';
 import { invoiceAPI, companyAPI } from '@/lib/api';
 import Link from 'next/link';
@@ -46,7 +47,7 @@ export default function Dashboard() {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 ml-64 flex items-center justify-center">
+        <div className="flex-1 pt-14 md:pt-0 md:ml-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600"></div>
         </div>
       </div>
@@ -57,12 +58,14 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-gray-600">Welcome to your billing dashboard</p>
+            <DashboardBanner
+              displayName={company?.name}
+              subtitle="Welcome to your billing dashboard."
+            />
           </div>
 
           {/* Stats Grid */}

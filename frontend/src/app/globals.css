@@ -69,3 +69,29 @@ button, a, input, select, textarea, .hover-transition {
   transform: translateY(-4px);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
+
+/* Dashboard banner decoration */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+@keyframes rise-fade {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(-18px); opacity: 0; }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .banner-float { animation: float 7s ease-in-out infinite; }
+  .banner-glow { animation: pulse-glow 5s ease-in-out infinite; }
+  .banner-rise { animation: rise-fade 7s ease-in-out infinite; }
+  .banner-in { animation: fade-in-up 0.5s ease-out both; }
+}

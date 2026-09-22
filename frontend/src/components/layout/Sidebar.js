@@ -1,11 +1,18 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { clearToken } from '@/lib/auth';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  function handleLogout() {
+    clearToken();
+    router.replace('/login');
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: '📊' },
@@ -72,7 +79,7 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <nav className="px-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100% - 120px)' }}>
+        <nav className="px-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100% - 190px)' }}>
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -92,6 +99,17 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        <div className="absolute bottom-4 left-4 right-4">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center justify-center space-x-2 rounded-xl px-4 py-3 font-semibold text-gray-300 cursor-pointer hover:bg-gray-700 hover:text-white transition-all duration-200"
+          >
+            <span className="text-xl">🚪</span>
+            <span>Log out</span>
+          </button>
+        </div>
       </div>
 
       {/* Version box: decorative, so it steps aside on small screens rather

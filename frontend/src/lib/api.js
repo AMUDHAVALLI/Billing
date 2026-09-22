@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getToken, clearToken } from './auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -8,6 +9,38 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// The backend and this app are separate origins, so its own cookie never
+// reaches the API on its own — it has to go up as a header on every request.
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// An expired or otherwise-rejected token means the session is over
+// regardless of which request noticed — clear it and send them back to
+// sign in rather than leaving them looking at a page that will never load.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      clearToken();
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+// Auth API
+export const authAPI = {
+  status: () => api.get('/auth/status'),
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  me: () => api.get('/auth/me'),
+};
 
 // Company API
 export const companyAPI = {

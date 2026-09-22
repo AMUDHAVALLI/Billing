@@ -8,10 +8,8 @@ import { setToken, getToken } from '@/lib/auth';
 
 export default function Login() {
   const router = useRouter();
-  const [needsSetup, setNeedsSetup] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,40 +19,21 @@ export default function Login() {
       router.replace('/');
       return;
     }
-    authAPI
-      .status()
-      .then((res) => setNeedsSetup(res.data.needsSetup))
-      .catch(() => setNeedsSetup(false));
   }, [router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-
-    if (needsSetup && password !== confirm) {
-      setError('Passwords do not match');
-      return;
-    }
-
     setLoading(true);
     try {
-      const call = needsSetup ? authAPI.register : authAPI.login;
-      const res = await call({ email, password });
+      const res = await authAPI.login({ email, password });
       setToken(res.data.token);
       router.replace('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Something went wrong. Try again.');
+      setError(err.response?.data?.error || 'Incorrect email or password');
     } finally {
       setLoading(false);
     }
-  }
-
-  if (needsSetup === null) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-600"></div>
-      </div>
-    );
   }
 
   return (
@@ -65,7 +44,7 @@ export default function Login() {
             💰 BillEase
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            {needsSetup ? 'Create your account to get started' : 'Sign in to continue'}
+            Sign in to continue
           </p>
         </div>
 
@@ -85,28 +64,16 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={needsSetup ? 8 : undefined}
-            autoComplete={needsSetup ? 'new-password' : 'current-password'}
-            placeholder={needsSetup ? 'At least 8 characters' : '••••••••'}
+            autoComplete="current-password"
+            placeholder="••••••••"
           />
-          {needsSetup && (
-            <Input
-              label="Confirm password"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              autoComplete="new-password"
-              placeholder="••••••••"
-            />
-          )}
 
           {error && (
             <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
           )}
 
           <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-            {loading ? 'Please wait…' : needsSetup ? 'Create account' : 'Sign in'}
+            {loading ? 'Please wait…' : 'Sign in'}
           </Button>
         </form>
       </div>

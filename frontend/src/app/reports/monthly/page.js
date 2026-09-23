@@ -31,9 +31,9 @@ export default function MonthlyReport() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Monthly Report</h1>
               <p className="text-gray-600">Monthly breakdown of revenue and GST for {year}</p>
@@ -71,21 +71,23 @@ export default function MonthlyReport() {
             <>
               {/* Visual Chart - Simple Bar Chart */}
               <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Revenue Trend</h3>
-                <div className="flex items-end justify-between h-48 gap-2">
-                  {data.map((item) => (
-                    <div key={item.month} className="flex-1 flex flex-col items-center group">
-                      <div 
-                        className="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg transition-all duration-300 hover:from-primary-600 hover:to-primary-500 relative cursor-pointer"
-                        style={{ height: `${(item.total / maxTotal) * 100}%`, minHeight: '4px' }}
-                      >
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                          ₹{item.total.toLocaleString('en-IN')}
+                <h3 className="text-xl font-bold text-gray-900 mb-8">Revenue Trend</h3>
+                <div className="overflow-x-auto">
+                  <div className="flex items-end h-48 gap-2 min-w-[560px] sm:min-w-0">
+                    {data.map((item) => (
+                      <div key={item.month} className="flex-1 min-w-[36px] flex flex-col items-center group">
+                        <div
+                          className="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg transition-all duration-300 hover:from-primary-600 hover:to-primary-500 relative cursor-pointer"
+                          style={{ height: `${(item.total / maxTotal) * 100}%`, minHeight: '4px' }}
+                        >
+                          <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            ₹{item.total.toLocaleString('en-IN')}
+                          </div>
                         </div>
+                        <span className="text-xs text-gray-500 mt-2 whitespace-nowrap">{item.monthName.substring(0, 3)}</span>
                       </div>
-                      <span className="text-xs text-gray-500 mt-2 rotate-45 origin-left">{item.monthName.substring(0, 3)}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 

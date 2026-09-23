@@ -152,7 +152,7 @@ export default function EditCashBillPage() {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 pt-14 md:pt-0 md:ml-64 flex items-center justify-center">
+        <div className="flex-1 pt-14 md:pt-16 md:ml-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-600"></div>
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function EditCashBillPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8 flex justify-between items-center">
             <div>

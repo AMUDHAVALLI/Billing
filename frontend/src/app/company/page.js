@@ -69,7 +69,7 @@ export default function CompanyPage() {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 pt-14 md:pt-0 md:ml-64 flex items-center justify-center">
+        <div className="flex-1 pt-14 md:pt-16 md:ml-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600"></div>
         </div>
       </div>
@@ -80,9 +80,9 @@ export default function CompanyPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Company Settings</h1>
               <p className="text-gray-600">Manage your company information</p>

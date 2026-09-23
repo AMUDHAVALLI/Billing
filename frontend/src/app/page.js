@@ -47,7 +47,7 @@ export default function Dashboard() {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 pt-14 md:pt-0 md:ml-64 flex items-center justify-center">
+        <div className="flex-1 pt-14 md:pt-16 md:ml-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600"></div>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
@@ -99,7 +99,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Company Info Card */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Company Details</h2>
                 <Link
                   href="/company"
@@ -143,7 +143,7 @@ export default function Dashboard() {
 
             {/* Recent Invoices */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Recent Invoices</h2>
                 <Link
                   href="/invoices"

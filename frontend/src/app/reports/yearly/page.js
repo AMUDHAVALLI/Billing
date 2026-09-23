@@ -30,7 +30,7 @@ export default function YearlyReport() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Yearly Report</h1>
@@ -58,7 +58,8 @@ export default function YearlyReport() {
               {data.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Yearly Revenue Comparison</h3>
-                  <div className="flex items-end justify-start h-48 gap-8">
+                  <div className="overflow-x-auto">
+                  <div className="flex items-end h-48 gap-8 w-max">
                     {data.slice().reverse().map((item) => (
                       <div key={item.year} className="flex-none w-20 flex flex-col items-center group">
                         <div 
@@ -72,6 +73,7 @@ export default function YearlyReport() {
                         <span className="text-sm font-bold text-gray-700 mt-2">{item.year}</span>
                       </div>
                     ))}
+                  </div>
                   </div>
                 </div>
               )}

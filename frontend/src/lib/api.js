@@ -40,6 +40,7 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   me: () => api.get('/auth/me'),
+  updatePassword: (data) => api.put('/auth/password', data),
 };
 
 // Company API

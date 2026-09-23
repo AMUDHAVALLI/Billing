@@ -48,7 +48,7 @@ export default function ViewCashBillPage() {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 pt-14 md:pt-0 md:ml-64 flex items-center justify-center">
+        <div className="flex-1 pt-14 md:pt-16 md:ml-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-600"></div>
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function ViewCashBillPage() {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 pt-14 md:pt-0 md:ml-64 p-8">
+        <div className="flex-1 pt-14 md:pt-16 md:ml-64 p-8">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Cash Bill Not Found</h2>
             <p className="text-gray-500 mb-6">The requested Cash / Service Bill could not be located.</p>
@@ -76,10 +76,10 @@ export default function ViewCashBillPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8 max-w-5xl mx-auto">
           {/* Top Bar Actions */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
             <Link href="/cash-bills">
               <Button variant="secondary" className="text-sm">
                 ← Back to Cash Bills

@@ -124,9 +124,9 @@ export default function CustomersPage() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Customers</h1>
               <p className="text-gray-600">Manage your customer database</p>

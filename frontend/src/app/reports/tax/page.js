@@ -105,7 +105,7 @@ export default function TaxReport() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 pt-14 md:pt-0 md:ml-64 overflow-auto">
+      <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <div>

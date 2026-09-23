@@ -11,7 +11,10 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${MAX_AGE}; SameSite=Lax`;
+  // Secure works fine on http://localhost too — Chrome/Firefox treat
+  // localhost as a secure context — so this is safe to set unconditionally.
+  const secure = location.protocol === 'https:' || location.hostname === 'localhost' ? '; Secure' : '';
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${MAX_AGE}; SameSite=Lax${secure}`;
 }
 
 export function clearToken() {

@@ -92,17 +92,14 @@ export default function DashboardBanner({ displayName, subtitle }) {
       </div>
 
       <div className="relative flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <p className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
-            <span>{greeting.icon}</span>
-            {greeting.text}
-            {displayName ? (
-              <>
-                , <span className="text-amber-200">{displayName}</span>
-              </>
-            ) : null}
-            !
+        <div className="min-w-0">
+          <p className="text-xl font-bold sm:text-2xl">
+            <span className="mr-2">{greeting.icon}</span>
+            {greeting.text}!
           </p>
+          {displayName && (
+            <p className="mt-0.5 text-lg font-bold text-amber-200 sm:text-xl">{displayName}</p>
+          )}
           <p className="mt-1 text-sm text-white/75">{greeting.note ?? subtitle}</p>
         </div>
         <div className="flex-shrink-0 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur-sm">

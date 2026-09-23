@@ -111,21 +111,21 @@ export default function Dashboard() {
               
               {company ? (
                 <div className="space-y-3">
-                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-gray-50 pb-2">
                     <span className="text-gray-600">Company Name:</span>
-                    <span className="font-bold text-gray-900">{company.name}</span>
+                    <span className="font-bold text-gray-900 sm:text-right">{company.name}</span>
                   </div>
-                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-gray-50 pb-2">
                     <span className="text-gray-600">GSTIN:</span>
-                    <span className="text-gray-900">{company.gstin}</span>
+                    <span className="text-gray-900 sm:text-right">{company.gstin}</span>
                   </div>
-                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-gray-50 pb-2">
                     <span className="text-gray-600">State:</span>
-                    <span className="text-gray-900">{company.state} (Code: {company.stateCode})</span>
+                    <span className="text-gray-900 sm:text-right">{company.state} (Code: {company.stateCode})</span>
                   </div>
-                  <div className="flex justify-between border-b border-gray-50 pb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 border-b border-gray-50 pb-2">
                     <span className="text-gray-600">Email:</span>
-                    <span className="text-gray-900">{company.email}</span>
+                    <span className="text-gray-900 sm:text-right break-all">{company.email}</span>
                   </div>
                   <div className="mt-4 pt-2 text-sm text-gray-500 italic">
                     {company.address}
@@ -158,22 +158,20 @@ export default function Dashboard() {
                   {stats.recentInvoices.map((invoice) => (
                     <div
                       key={invoice.id}
-                      className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:border-primary-400 transition-all card-hover"
+                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 rounded-lg hover:border-primary-400 transition-all card-hover"
                     >
-                      <Link href={`/invoices/${invoice.id}`} className="flex-1 cursor-pointer">
-                        <div>
-                          <p className="font-semibold text-gray-900">{invoice.invoiceNumber}</p>
-                          <p className="text-sm text-gray-600">{invoice.customer.name}</p>
-                        </div>
+                      <Link href={`/invoices/${invoice.id}`} className="cursor-pointer min-w-0">
+                        <p className="font-semibold text-gray-900 whitespace-nowrap">{invoice.invoiceNumber}</p>
+                        <p className="text-sm text-gray-600 truncate">{invoice.customer.name}</p>
                       </Link>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right mr-4 border-r pr-4 border-gray-100">
+                      <div className="flex flex-wrap items-center justify-between gap-4 sm:justify-end">
+                        <div className="text-left sm:text-right sm:mr-4 sm:border-r sm:pr-4 border-gray-100">
                           <p className="font-bold text-gray-900">₹{invoice.total.toLocaleString('en-IN')}</p>
                           <p className="text-sm text-gray-600">
                             {new Date(invoice.date).toLocaleDateString('en-IN')}
                           </p>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex gap-2">
                           <Link
                             href={`/invoices/edit/${invoice.id}`}
                             className="inline-flex items-center justify-center px-3 py-1 text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md hover:bg-indigo-100 transition-colors text-xs font-bold"

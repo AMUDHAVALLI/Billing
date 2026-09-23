@@ -23,6 +23,10 @@ export function middleware(request) {
 }
 
 export const config = {
-  // Everything except static assets and Next's own internals.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Everything except static assets, Next's own internals, and the PWA
+  // shell files — a browser must be able to fetch the manifest, icons and
+  // service worker with no auth cookie at all, or install never even starts.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icon-192.png|icon-512.png).*)',
+  ],
 };

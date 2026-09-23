@@ -1,38 +1,7 @@
 'use client';
 
 // Same idea as the greeting banner on the other in-house app: a warm,
-// time-aware welcome instead of a plain page header. Re-picks the "signed
-// off for the night" subtitle and the decorative icon layout on every
-// mount, so it doesn't look frozen the same way on every visit.
-
-const DECOR_ICONS = ['📊', '💰', '🏆', '⭐', '🏦', '💡'];
-const DECOR_SLOTS = [
-  { left: 8, top: 22, size: 'text-lg', opacity: 'opacity-20' },
-  { left: 18, top: 72, size: 'text-lg', opacity: 'opacity-20' },
-  { left: 32, top: 42, size: 'text-lg', opacity: 'opacity-30' },
-  { left: 60, top: 78, size: 'text-lg', opacity: 'opacity-25' },
-  { left: 70, top: 30, size: 'text-2xl', opacity: 'opacity-20' },
-  { left: 90, top: 62, size: 'text-lg', opacity: 'opacity-25' },
-];
-
-function pickDecor() {
-  let previous = null;
-  return DECOR_SLOTS.map((slot) => {
-    let icon = DECOR_ICONS[Math.floor(Math.random() * DECOR_ICONS.length)];
-    for (let attempt = 0; icon === previous && attempt < 5; attempt++) {
-      icon = DECOR_ICONS[Math.floor(Math.random() * DECOR_ICONS.length)];
-    }
-    previous = icon;
-    return {
-      icon,
-      left: slot.left + (Math.random() * 6 - 3),
-      top: slot.top + (Math.random() * 12 - 6),
-      size: slot.size,
-      opacity: slot.opacity,
-      delay: Math.random() * 4,
-    };
-  });
-}
+// time-aware welcome instead of a plain page header.
 
 const NIGHT_NOTES = [
   'The ledgers will still be here tomorrow.',
@@ -64,42 +33,32 @@ export default function DashboardBanner({ displayName, subtitle }) {
     month: 'long',
     year: 'numeric',
   });
-  const decor = pickDecor();
 
   return (
     <div className="banner-in relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 via-primary-700 to-accent-600 p-6 text-white shadow-lg sm:p-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="banner-float absolute -right-16 -top-20 h-64 w-64 rounded-3xl bg-white/10 blur-xl" />
         <div
-          className="banner-float absolute -bottom-24 left-1/3 h-56 w-56 rounded-3xl bg-accent-500/20 blur-xl"
+          className="banner-float absolute -bottom-24 -left-16 h-56 w-56 rounded-3xl bg-accent-500/20 blur-xl"
           style={{ animationDelay: '1.5s' }}
         />
-        <div className="banner-glow absolute left-6 top-6 h-10 w-10 rounded-xl bg-gradient-to-br from-white/20 to-transparent" />
-        <div
-          className="banner-glow absolute left-1/2 bottom-3 h-16 w-16 -translate-x-1/2 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
-          style={{ animationDelay: '0.9s' }}
-        />
-        {decor.map((item, i) => (
-          <span
-            key={i}
-            aria-hidden
-            className={`banner-rise absolute -translate-x-1/2 -translate-y-1/2 ${item.size} ${item.opacity}`}
-            style={{ left: `${item.left}%`, top: `${item.top}%`, animationDelay: `${item.delay}s` }}
-          >
-            {item.icon}
-          </span>
-        ))}
+        {/* Static glass sheen across the top, plus a slow light sweep for the "glossy" feel */}
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent" />
+        <div className="banner-shine absolute -top-1/2 left-0 h-[200%] w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       </div>
 
       <div className="relative flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="min-w-0">
-          <p className="text-xl font-bold sm:text-2xl">
-            <span className="mr-2">{greeting.icon}</span>
-            {greeting.text}!
-          </p>
-          {displayName && (
-            <p className="mt-0.5 text-lg font-bold text-amber-200 sm:text-xl">{displayName}</p>
-          )}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-2">
+            <p className="text-xl font-bold sm:text-2xl">
+              <span className="banner-wave mr-2">{greeting.icon}</span>
+              {greeting.text}
+              {displayName ? ',' : '!'}
+            </p>
+            {displayName && (
+              <p className="mt-0.5 text-lg font-bold text-amber-200 sm:mt-0 sm:text-2xl">{displayName}!</p>
+            )}
+          </div>
           <p className="mt-1 text-sm text-white/75">{greeting.note ?? subtitle}</p>
         </div>
         <div className="flex-shrink-0 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur-sm">

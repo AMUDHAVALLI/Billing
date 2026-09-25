@@ -6,12 +6,14 @@ import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { invoiceAPI } from '@/lib/api';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -68,17 +70,21 @@ export default function InvoicesPage() {
       // window.URL.revokeObjectURL(url); // Don't revoke yet so preview works
     } catch (error) {
       console.error('Failed to download PDF:', error);
+      setError('Failed to generate PDF for this invoice.');
     }
   };
 
-  const handleDelete = async (invoice) => {
-    if (confirm(`Delete invoice ${invoice.invoiceNumber}?`)) {
-      try {
-        await invoiceAPI.delete(invoice.id);
-        fetchInvoices();
-      } catch (error) {
-        console.error('Failed to delete invoice:', error);
-      }
+  const handleDelete = (invoice) => setDeleteTarget(invoice);
+
+  const confirmDelete = async () => {
+    const invoice = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await invoiceAPI.delete(invoice.id);
+      fetchInvoices();
+    } catch (error) {
+      console.error('Failed to delete invoice:', error);
+      setError(`Failed to delete invoice ${invoice.invoiceNumber}.`);
     }
   };
 
@@ -266,6 +272,14 @@ export default function InvoicesPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title="Delete Invoice"
+        message={`Delete invoice ${deleteTarget?.invoiceNumber}? This can't be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

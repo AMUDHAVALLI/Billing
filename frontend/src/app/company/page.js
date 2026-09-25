@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import AlertDialog from '@/components/ui/AlertDialog';
 import { companyAPI } from '@/lib/api';
 
 export default function CompanyPage() {
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -61,7 +63,7 @@ export default function CompanyPage() {
       fetchCompany();
     } catch (error) {
       console.error('Failed to save company:', error);
-      alert('Failed to save company details');
+      setAlertMessage('Failed to save company details');
     }
   };
 
@@ -246,6 +248,12 @@ export default function CompanyPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog
+        isOpen={!!alertMessage}
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

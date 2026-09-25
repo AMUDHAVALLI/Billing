@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ProductSearchableSelect from '@/components/ui/ProductSearchableSelect';
 import CustomerSearchableSelect from '@/components/ui/CustomerSearchableSelect';
+import AlertDialog from '@/components/ui/AlertDialog';
 import { invoiceAPI, customerAPI, productAPI, companyAPI } from '@/lib/api';
 
 export default function EditInvoicePage({ params }) {
@@ -15,6 +16,8 @@ export default function EditInvoicePage({ params }) {
   const [products, setProducts] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertMessage, setAlertMessage] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   
   const [formData, setFormData] = useState({
     companyId: '',
@@ -70,8 +73,11 @@ export default function EditInvoicePage({ params }) {
       
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      alert('Failed to load invoice data');
-      router.push('/invoices');
+      // Navigation waits for the dialog to close (unlike alert(), setting
+      // state doesn't block) — otherwise the redirect fires before anyone
+      // could read why.
+      setLoadFailed(true);
+      setAlertMessage('Failed to load invoice data');
     } finally {
       setLoading(false);
     }
@@ -119,7 +125,7 @@ export default function EditInvoicePage({ params }) {
     e.preventDefault();
     
     if (formData.items.length === 0) {
-      alert('Please add at least one item');
+      setAlertMessage('Please add at least one item');
       return;
     }
 
@@ -128,7 +134,7 @@ export default function EditInvoicePage({ params }) {
       router.push('/invoices');
     } catch (error) {
       console.error('Failed to update invoice:', error);
-      alert('Failed to update invoice');
+      setAlertMessage('Failed to update invoice');
     }
   };
 
@@ -320,6 +326,15 @@ export default function EditInvoicePage({ params }) {
           </form>
         </div>
       </div>
+
+      <AlertDialog
+        isOpen={!!alertMessage}
+        message={alertMessage}
+        onClose={() => {
+          setAlertMessage(null);
+          if (loadFailed) router.push('/invoices');
+        }}
+      />
     </div>
   );
 }

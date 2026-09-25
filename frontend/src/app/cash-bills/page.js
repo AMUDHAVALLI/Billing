@@ -5,12 +5,14 @@ import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { cashBillAPI } from '@/lib/api';
 
 export default function CashBillsPage() {
   const [cashBills, setCashBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -68,19 +70,21 @@ export default function CashBillsPage() {
       window.open(url, '_blank');
     } catch (error) {
       console.error('Failed to download PDF:', error);
-      alert('Failed to generate PDF for Cash Bill');
+      setError('Failed to generate PDF for Cash Bill.');
     }
   };
 
-  const handleDelete = async (bill) => {
-    if (confirm(`Are you sure you want to delete Cash Bill ${bill.billNumber}?`)) {
-      try {
-        await cashBillAPI.delete(bill.id);
-        fetchCashBills(pagination.page, debouncedSearch, pagination.limit);
-      } catch (error) {
-        console.error('Failed to delete cash bill:', error);
-        alert('Failed to delete cash bill');
-      }
+  const handleDelete = (bill) => setDeleteTarget(bill);
+
+  const confirmDelete = async () => {
+    const bill = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await cashBillAPI.delete(bill.id);
+      fetchCashBills(pagination.page, debouncedSearch, pagination.limit);
+    } catch (error) {
+      console.error('Failed to delete cash bill:', error);
+      setError(`Failed to delete Cash Bill ${bill.billNumber}.`);
     }
   };
 
@@ -259,6 +263,14 @@ export default function CashBillsPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title="Delete Cash Bill"
+        message={`Are you sure you want to delete Cash Bill ${deleteTarget?.billNumber}? This can't be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

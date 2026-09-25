@@ -7,12 +7,14 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { customerAPI } from '@/lib/api';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [pagination, setPagination] = useState({
@@ -85,6 +87,7 @@ export default function CustomersPage() {
       fetchCustomers();
     } catch (error) {
       console.error('Failed to save customer:', error);
+      setError('Failed to save customer. Please check the details and try again.');
     }
   };
 
@@ -94,14 +97,17 @@ export default function CustomersPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (customer) => {
-    if (confirm(`Delete customer ${customer.name}?`)) {
-      try {
-        await customerAPI.delete(customer.id);
-        fetchCustomers();
-      } catch (error) {
-        console.error('Failed to delete customer:', error);
-      }
+  const handleDelete = (customer) => setDeleteTarget(customer);
+
+  const confirmDelete = async () => {
+    const customer = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await customerAPI.delete(customer.id);
+      fetchCustomers();
+    } catch (error) {
+      console.error('Failed to delete customer:', error);
+      setError(`Failed to delete ${customer.name}.`);
     }
   };
 
@@ -295,6 +301,14 @@ export default function CustomersPage() {
           </Modal>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title="Delete Customer"
+        message={`Delete customer ${deleteTarget?.name}? This can't be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

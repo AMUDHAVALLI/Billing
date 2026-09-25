@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ProductSearchableSelect from '@/components/ui/ProductSearchableSelect';
 import CustomerSearchableSelect from '@/components/ui/CustomerSearchableSelect';
+import AlertDialog from '@/components/ui/AlertDialog';
 import { invoiceAPI, customerAPI, productAPI, companyAPI } from '@/lib/api';
 
 export default function CreateInvoicePage() {
@@ -14,6 +15,7 @@ export default function CreateInvoicePage() {
   const [products, setProducts] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertMessage, setAlertMessage] = useState(null);
   
   const [formData, setFormData] = useState({
     companyId: '',
@@ -100,7 +102,7 @@ export default function CreateInvoicePage() {
     e.preventDefault();
     
     if (formData.items.length === 0) {
-      alert('Please add at least one item');
+      setAlertMessage('Please add at least one item');
       return;
     }
 
@@ -109,7 +111,7 @@ export default function CreateInvoicePage() {
       router.push('/invoices');
     } catch (error) {
       console.error('Failed to create invoice:', error);
-      alert('Failed to create invoice');
+      setAlertMessage('Failed to create invoice');
     }
   };
 
@@ -286,6 +288,12 @@ export default function CreateInvoicePage() {
           </form>
         </div>
       </div>
+
+      <AlertDialog
+        isOpen={!!alertMessage}
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

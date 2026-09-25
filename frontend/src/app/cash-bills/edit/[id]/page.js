@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import AlertDialog from '@/components/ui/AlertDialog';
 import { cashBillAPI, customerAPI, productAPI } from '@/lib/api';
 
 export default function EditCashBillPage() {
@@ -13,6 +14,7 @@ export default function EditCashBillPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [clientSearch, setClientSearch] = useState('');
@@ -57,7 +59,7 @@ export default function EditCashBillPage() {
       setProducts(prodRes.data.products || prodRes.data || []);
     } catch (err) {
       console.error('Failed to load bill for editing:', err);
-      alert('Failed to load Cash Bill');
+      setAlertMessage('Failed to load Cash Bill');
     } finally {
       setLoading(false);
     }
@@ -78,11 +80,11 @@ export default function EditCashBillPage() {
 
   const addItem = () => {
     if (!newItem.particulars || newItem.particulars.trim() === '') {
-      alert('Please enter Particulars for the item');
+      setAlertMessage('Please enter Particulars for the item');
       return;
     }
     if (newItem.quantity <= 0) {
-      alert('Quantity must be greater than 0');
+      setAlertMessage('Quantity must be greater than 0');
       return;
     }
 
@@ -123,12 +125,12 @@ export default function EditCashBillPage() {
     e.preventDefault();
 
     if (!formData.clientName || formData.clientName.trim() === '') {
-      alert('Please enter Client Name');
+      setAlertMessage('Please enter Client Name');
       return;
     }
 
     if (formData.items.length === 0) {
-      alert('Please add at least one line item');
+      setAlertMessage('Please add at least one line item');
       return;
     }
 
@@ -138,7 +140,7 @@ export default function EditCashBillPage() {
       router.push('/cash-bills');
     } catch (error) {
       console.error('Failed to update Cash Bill:', error);
-      alert(error.response?.data?.error || 'Failed to update Cash Bill');
+      setAlertMessage(error.response?.data?.error || 'Failed to update Cash Bill');
     } finally {
       setSaving(false);
     }
@@ -383,6 +385,12 @@ export default function EditCashBillPage() {
           </form>
         </div>
       </div>
+
+      <AlertDialog
+        isOpen={!!alertMessage}
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

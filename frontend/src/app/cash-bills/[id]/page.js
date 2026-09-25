@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
+import AlertDialog from '@/components/ui/AlertDialog';
 import { cashBillAPI } from '@/lib/api';
 
 export default function ViewCashBillPage() {
@@ -13,6 +14,7 @@ export default function ViewCashBillPage() {
 
   const [cashBill, setCashBill] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -40,7 +42,7 @@ export default function ViewCashBillPage() {
       window.open(url, '_blank');
     } catch (error) {
       console.error('Failed to download PDF:', error);
-      alert('Failed to generate PDF');
+      setAlertMessage('Failed to generate PDF');
     }
   };
 
@@ -256,6 +258,12 @@ export default function ViewCashBillPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog
+        isOpen={!!alertMessage}
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

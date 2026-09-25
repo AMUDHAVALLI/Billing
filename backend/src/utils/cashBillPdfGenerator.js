@@ -53,9 +53,14 @@ export async function generateCashBillPDF(cashBill, company = null) {
          doc.font('Helvetica-Bold').fontSize(10).fillColor('#0F172A')
             .text(`Cell : ${compPhone}`, endX - 180, topY + 12, { width: 170, align: 'right' });
 
-         // --- TOP LEFT LOGO ---
+         // --- TOP LEFT LOGO --- fills the header block down to the rule
+         // under the address/email lines, not just a small corner mark.
          try {
-            doc.image(LOGO_PATH, startX + 8, topY + 6, { fit: [58, 45] });
+            doc.image(LOGO_PATH, startX + 4, topY + 3, {
+               fit: [100, 88],
+               align: 'center',
+               valign: 'center',
+            });
          } catch (err) {
             // Missing/unreadable logo file shouldn't block the bill itself.
          }

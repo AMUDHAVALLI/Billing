@@ -105,28 +105,14 @@ export default function ViewCashBillPage() {
             {/* Header Badge */}
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-4">
-                {/* Authentic Sri Balaji Computers Logo SVG */}
-                <div className="flex flex-col items-center">
-                  <svg viewBox="0 0 78 44" className="h-14 w-auto">
-                    {/* SB Monogram */}
-                    <text x="2" y="24" fill="#1E3A8A" fontWeight="900" fontSize="26" fontFamily="sans-serif">
-                      SB
-                    </text>      
-                    {/* Outer 'C' shape in correct direction (opening to the right) */}
-                    <path d="M 48 6 C 32 4 32 26 48 24" fill="none" stroke="#1E3A8A" strokeWidth="2.8" strokeLinecap="round" />
-                    {/* Wire cord from C to mouse */}
-                    <path d="M 48 15 Q 62 15 62 24" fill="none" stroke="#1E3A8A" strokeWidth="1.6" />
-                    {/* Computer Mouse */}
-                    <ellipse cx="62" cy="26" rx="5" ry="3.5" fill="none" stroke="#1E3A8A" strokeWidth="1.2" />
-                    <line x1="62" y1="22.5" x2="62" y2="25" stroke="#1E3A8A" strokeWidth="1" />
-                    
-                    {/* SYSTEM DOCTOR badge box */}
-                    <rect x="0" y="31" width="70" height="11" fill="none" stroke="#1E3A8A" strokeWidth="1" rx="1" />
-                    <text x="35" y="39" textAnchor="middle" fill="#1E3A8A" fontWeight="800" fontSize="7" letterSpacing="0.5" fontFamily="sans-serif">
-                      SYSTEM DOCTOR
-                    </text>
-                  </svg>
-                </div>
+                {/* Same logo the downloaded PDF uses, not a separate
+                    hand-drawn stand-in — so the preview matches what
+                    actually gets printed. */}
+                <img
+                  src="/system-doctor-logo.png"
+                  alt="System Doctor"
+                  className="h-16 w-auto object-contain"
+                />
                 <div>
                   <h1 className="text-3xl font-extrabold text-gray-900">Sri Balaji Computers</h1>
                   <p className="text-xs text-gray-500">No.75, East Pondy Main Road, Villianur, Puducherry - 110.</p>

@@ -8,6 +8,8 @@ import Input from '@/components/ui/Input';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import TableSkeleton from '@/components/ui/TableSkeleton';
+import { getCached, setCached } from '@/lib/listCache';
 import { customerAPI } from '@/lib/api';
 
 export default function CustomersPage() {
@@ -50,17 +52,30 @@ export default function CustomersPage() {
   }, [search]);
 
   const fetchCustomers = async (page = 1, searchQuery = '', limit = pagination.limit) => {
-    setLoading(true);
+    const cacheKey = `customers:${page}:${limit}:${searchQuery}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setCustomers(cached.customers);
+      setPagination(cached.pagination);
+      setError(null);
+    } else {
+      setLoading(true);
+    }
     try {
-      const response = await customerAPI.getAll({ 
-        page, 
+      const response = await customerAPI.getAll({
+        page,
         limit: limit,
-        search: searchQuery 
+        search: searchQuery
       });
-      setCustomers(response.data.customers || response.data);
+      const customersData = response.data.customers || response.data;
+      setCustomers(customersData);
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setCached(cacheKey, {
+        customers: customersData,
+        pagination: response.data.pagination || pagination,
+      });
       setError(null);
     } catch (error) {
       console.error('Failed to fetch customers:', error);
@@ -197,9 +212,7 @@ export default function CustomersPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600"></div>
-            </div>
+            <TableSkeleton columns={columns.length + 1} />
           ) : (
             <>
               <Table

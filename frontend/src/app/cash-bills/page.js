@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import TableSkeleton from '@/components/ui/TableSkeleton';
+import { getCached, setCached } from '@/lib/listCache';
 import { cashBillAPI } from '@/lib/api';
 
 export default function CashBillsPage() {
@@ -35,7 +37,18 @@ export default function CashBillsPage() {
   }, [search]);
 
   const fetchCashBills = async (page = 1, searchQuery = '', limit = pagination.limit) => {
-    setLoading(true);
+    // Same page visited before in this tab: show it immediately instead of
+    // a blank spinner, then quietly refetch below and swap in whatever
+    // changed. A page seen for the first time still waits as normal.
+    const cacheKey = `cash-bills:${page}:${limit}:${searchQuery}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setCashBills(cached.cashBills);
+      setPagination(cached.pagination);
+      setError(null);
+    } else {
+      setLoading(true);
+    }
     try {
       const response = await cashBillAPI.getAll({
         page,
@@ -46,6 +59,10 @@ export default function CashBillsPage() {
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setCached(cacheKey, {
+        cashBills: response.data.cashBills || [],
+        pagination: response.data.pagination || pagination,
+      });
       setError(null);
     } catch (error) {
       console.error('Failed to fetch cash bills:', error);
@@ -179,9 +196,7 @@ export default function CashBillsPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-600"></div>
-            </div>
+            <TableSkeleton columns={columns.length + 1} />
           ) : (
             <>
               <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-xl border border-gray-100">

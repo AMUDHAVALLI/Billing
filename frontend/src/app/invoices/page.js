@@ -7,6 +7,8 @@ import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
 import ErrorBanner from '@/components/ui/ErrorBanner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import TableSkeleton from '@/components/ui/TableSkeleton';
+import { getCached, setCached } from '@/lib/listCache';
 import { invoiceAPI } from '@/lib/api';
 
 export default function InvoicesPage() {
@@ -36,17 +38,30 @@ export default function InvoicesPage() {
   }, [search]);
 
   const fetchInvoices = async (page = 1, searchQuery = '', limit = pagination.limit) => {
-    setLoading(true);
+    const cacheKey = `invoices:${page}:${limit}:${searchQuery}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setInvoices(cached.invoices);
+      setPagination(cached.pagination);
+      setError(null);
+    } else {
+      setLoading(true);
+    }
     try {
-      const response = await invoiceAPI.getAll({ 
-        page, 
+      const response = await invoiceAPI.getAll({
+        page,
         limit: limit,
-        search: searchQuery 
+        search: searchQuery
       });
-      setInvoices(response.data.invoices || response.data);
+      const invoicesData = response.data.invoices || response.data;
+      setInvoices(invoicesData);
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setCached(cacheKey, {
+        invoices: invoicesData,
+        pagination: response.data.pagination || pagination,
+      });
       setError(null);
     } catch (error) {
       console.error('Failed to fetch invoices:', error);
@@ -189,9 +204,7 @@ export default function InvoicesPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600"></div>
-            </div>
+            <TableSkeleton columns={columns.length + 1} />
           ) : (
             <>
               <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-xl border border-gray-100">

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import DashboardBanner from '@/components/layout/DashboardBanner';
 import Button from '@/components/ui/Button';
+import ErrorBanner from '@/components/ui/ErrorBanner';
+import { getCached, setCached } from '@/lib/listCache';
 import { invoiceAPI, companyAPI } from '@/lib/api';
 import Link from 'next/link';
 
@@ -10,23 +12,41 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    // Coming back to the dashboard (e.g. after visiting another tab) shows
+    // last time's numbers immediately instead of blanking to a full-page
+    // spinner, while a fresh fetch quietly runs behind it.
+    const cacheKey = 'dashboard';
+    const cached = getCached(cacheKey);
+    if (cached) {
+      setStats(cached.stats);
+      setCompany(cached.company);
+      setError(null);
+      setLoading(false);
+    }
     try {
       const [statsRes, companyRes] = await Promise.all([
         invoiceAPI.getDashboardStats(),
         companyAPI.getAll()
       ]);
+      const companyData = companyRes.data && companyRes.data.length > 0 ? companyRes.data[0] : null;
       setStats(statsRes.data);
-      if (companyRes.data && companyRes.data.length > 0) {
-        setCompany(companyRes.data[0]);
-      }
+      setCompany(companyData);
+      setCached(cacheKey, { stats: statsRes.data, company: companyData });
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      setError(
+        error.response
+          ? `Couldn't load dashboard data (${error.response.status}). Please try again.`
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -60,6 +80,8 @@ export default function Dashboard() {
       
       <div className="flex-1 pt-14 md:pt-16 md:ml-64 overflow-auto">
         <div className="p-8">
+          <ErrorBanner message={error} onRetry={fetchData} />
+
           {/* Header */}
           <div className="mb-8">
             <DashboardBanner

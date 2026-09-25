@@ -94,7 +94,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
               title="Total Revenue"
-              value={`₹${stats?.totalRevenue?.toLocaleString('en-IN') || 0}`}
+              value={stats?.totalRevenue || 0}
+              prefix="₹"
               icon="💰"
               color="from-green-500 to-green-600"
             />
@@ -249,7 +250,36 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ title, value, icon, color }) {
+// Counts up from 0 to the real value on every mount/change instead of just
+// appearing — same effect as the balance reveal elsewhere. Skipped under
+// prefers-reduced-motion, where it jumps straight to the final number.
+function StatCard({ title, value, prefix = '', icon, color }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      setDisplay(target);
+      return;
+    }
+    let start = null;
+    let frame;
+    const duration = 700;
+    function step(ts) {
+      if (start === null) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(target * eased));
+      if (p < 1) frame = requestAnimationFrame(step);
+    }
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 card-hover">
       <div className="flex items-center justify-between mb-4">
@@ -258,7 +288,10 @@ function StatCard({ title, value, icon, color }) {
         </div>
       </div>
       <h3 className="text-gray-600 text-sm font-semibold mb-1">{title}</h3>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+      <p className="text-3xl font-bold text-gray-900">
+        {prefix}
+        {display.toLocaleString('en-IN')}
+      </p>
     </div>
   );
 }

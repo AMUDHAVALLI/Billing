@@ -6,11 +6,13 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Pagination from '@/components/ui/Pagination';
+import ErrorBanner from '@/components/ui/ErrorBanner';
 import { customerAPI } from '@/lib/api';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [pagination, setPagination] = useState({
@@ -57,8 +59,14 @@ export default function CustomersPage() {
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch customers:', error);
+      setError(
+        error.response
+          ? `Couldn't load customers (${error.response.status}). Please try again.`
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -140,6 +148,11 @@ export default function CustomersPage() {
               + Add Customer
             </Button>
           </div>
+
+          <ErrorBanner
+            message={error}
+            onRetry={() => fetchCustomers(pagination.page, debouncedSearch, pagination.limit)}
+          />
 
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-4">

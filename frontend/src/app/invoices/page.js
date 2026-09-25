@@ -5,11 +5,13 @@ import Table from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
+import ErrorBanner from '@/components/ui/ErrorBanner';
 import { invoiceAPI } from '@/lib/api';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -43,8 +45,14 @@ export default function InvoicesPage() {
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch invoices:', error);
+      setError(
+        error.response
+          ? `Couldn't load invoices (${error.response.status}). Please try again.`
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -132,6 +140,11 @@ export default function InvoicesPage() {
               <Button>+ Create Invoice</Button>
             </Link>
           </div>
+
+          <ErrorBanner
+            message={error}
+            onRetry={() => fetchInvoices(pagination.page, debouncedSearch, pagination.limit)}
+          />
 
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-4">

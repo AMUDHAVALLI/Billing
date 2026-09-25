@@ -6,11 +6,13 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Pagination from '@/components/ui/Pagination';
+import ErrorBanner from '@/components/ui/ErrorBanner';
 import { productAPI } from '@/lib/api';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [pagination, setPagination] = useState({
@@ -54,8 +56,14 @@ export default function ProductsPage() {
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setError(
+        error.response
+          ? `Couldn't load products (${error.response.status}). Please try again.`
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -150,6 +158,11 @@ export default function ProductsPage() {
               + Add Product
             </Button>
           </div>
+
+          <ErrorBanner
+            message={error}
+            onRetry={() => fetchProducts(pagination.page, debouncedSearch)}
+          />
 
           <div className="mb-6">
             <div className="relative max-w-md">

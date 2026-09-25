@@ -4,11 +4,13 @@ import Sidebar from '@/components/layout/Sidebar';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import Pagination from '@/components/ui/Pagination';
+import ErrorBanner from '@/components/ui/ErrorBanner';
 import { cashBillAPI } from '@/lib/api';
 
 export default function CashBillsPage() {
   const [cashBills, setCashBills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -42,8 +44,17 @@ export default function CashBillsPage() {
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       }
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch cash bills:', error);
+      // A 401 already redirects to /login via the API interceptor — this
+      // covers everything else (network errors, a down backend, a 500),
+      // which used to fail the same way as "no bills yet": silently.
+      setError(
+        error.response
+          ? `Couldn't load cash bills (${error.response.status}). Please try again.`
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -121,6 +132,11 @@ export default function CashBillsPage() {
               </Button>
             </Link>
           </div>
+
+          <ErrorBanner
+            message={error}
+            onRetry={() => fetchCashBills(pagination.page, debouncedSearch, pagination.limit)}
+          />
 
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-4">

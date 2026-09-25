@@ -56,7 +56,9 @@ function drawOneBill(doc, cashBill, company) {
                valign: 'center',
             });
          } catch (err) {
-            // Missing/unreadable logo file shouldn't block the bill itself.
+            // Missing/unreadable logo file shouldn't block the bill itself —
+            // but it should be loud in the logs, not a silent blank corner.
+            console.error('Cash bill logo failed to load:', err.message);
          }
 
          // --- COMPANY HEADER DETAILS ---

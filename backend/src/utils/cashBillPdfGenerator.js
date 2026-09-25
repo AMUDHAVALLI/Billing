@@ -11,8 +11,14 @@ const LOGO_PATH = path.join(import.meta.dirname, '../assets/system-doctor-logo.p
  * — the drawing code itself never needs to know where on the real page it
  * ends up, which is what makes printing two copies on one landscape page
  * just a matter of calling this twice instead of a second, parallel layout.
+ *
+ * The bordered box runs from (30, 25) to (565, maxY). maxY is a parameter so
+ * the caller can stretch the box to whatever shape fills its slot evenly;
+ * the extra height all goes to the items table, the footer keeps its size.
  */
-function drawOneBill(doc, cashBill, company) {
+const BILL_BOX = { x: 30, y: 25, w: 535 };
+
+function drawOneBill(doc, cashBill, company, maxY = 760) {
          // Default company details if none provided
          const compName = company?.name || 'Sri Balaji Computers';
          const compAddress = company?.address
@@ -22,11 +28,10 @@ function drawOneBill(doc, cashBill, company) {
          const compPhone = company?.phone || company?.contact || '72 00 11 33 44';
 
          // Outer boundary dimensions
-         const startX = 30;
-         const endX = 565;
+         const startX = BILL_BOX.x;
+         const endX = BILL_BOX.x + BILL_BOX.w;
          const width = endX - startX;
-         const topY = 25;
-         const maxY = 760;
+         const topY = BILL_BOX.y;
 
          // Draw Main Border
          doc.lineWidth(1);
@@ -50,8 +55,8 @@ function drawOneBill(doc, cashBill, company) {
          // --- TOP LEFT LOGO --- fills the header block down to the rule
          // under the address/email lines, not just a small corner mark.
          try {
-            doc.image(LOGO_PATH, startX + 4, topY + 3, {
-               fit: [100, 88],
+            doc.image(LOGO_PATH, startX + 10, topY + 3, {
+               fit: [96, 88],
                align: 'center',
                valign: 'center',
             });
@@ -112,7 +117,8 @@ function drawOneBill(doc, cashBill, company) {
          // --- TABLE LAYOUT ---
          const tableTop = metaY;
          const headerHeight = 25;
-         const tableBottom = 620;
+         // Footer (total, logos, signatory) is a fixed 140 tall under this.
+         const tableBottom = maxY - 140;
 
          // Columns specification
          const cols = {
@@ -239,7 +245,7 @@ function drawOneBill(doc, cashBill, company) {
 /**
  * Generate Cash / Service Bill PDF — one A4 landscape page holding two
  * copies of the same bill side by side (the usual "customer copy / office
- * copy" printing convention), with a dashed cut guide down the middle.
+ * copy" printing convention).
  * @param {Object} cashBill - The CashBill database record with items
  * @param {Object} [company] - Optional Company record for header details
  */
@@ -253,24 +259,29 @@ export async function generateCashBillPDF(cashBill, company = null) {
          doc.on('end', () => resolve(Buffer.concat(chunks)));
          doc.on('error', reject);
 
-         // drawOneBill's own coordinate system is a ~595x785 portrait
-         // canvas. Scaling it down and translating it twice — once per
-         // half of the landscape page — prints two copies without a
-         // second, parallel layout to keep in sync with the first.
+         // drawOneBill's own coordinate system is a portrait canvas. Scaling
+         // it down and translating it twice — once per half of the landscape
+         // page — prints two copies without a second, parallel layout to
+         // keep in sync with the first.
+         //
+         // Each bordered box sits the same MARGIN from the page edges and
+         // from the middle of the page. Width fixes the scale; the box is then made
+         // exactly tall enough to leave that same margin top and bottom.
          const pageW = doc.page.width;
          const pageH = doc.page.height;
          const halfW = pageW / 2;
-         const billW = 595;
-         const billH = 785;
-         const scale = 0.68;
-         const xOffset = (halfW - billW * scale) / 2;
-         const yOffset = (pageH - billH * scale) / 2;
+         const MARGIN = 18; // ~6 mm, clear of most printers' unprintable edge
+         const scale = (halfW - 2 * MARGIN) / BILL_BOX.w;
+         const boxH = (pageH - 2 * MARGIN) / scale;
+         const maxY = BILL_BOX.y + boxH;
+         const xOffset = MARGIN - BILL_BOX.x * scale;
+         const yOffset = MARGIN - BILL_BOX.y * scale;
 
          // PDFKit's own text-flow bookkeeping decides whether to start a new
          // page by checking raw y-coordinates against the real page height —
          // it has no idea a scale() transform is about to shrink everything
-         // to fit, so drawOneBill's largest y-values (~760, meant for the
-         // *unscaled* 785-tall canvas) look like massive overflow on a
+         // to fit, so drawOneBill's largest y-values (~800, meant for the
+         // *unscaled* canvas) look like massive overflow on a
          // 595-tall landscape page and it silently added a new page for
          // nearly every text call. Every coordinate in drawOneBill is passed
          // explicitly, so nothing actually depends on that bookkeeping —
@@ -281,15 +292,10 @@ export async function generateCashBillPDF(cashBill, company = null) {
             doc.save();
             doc.translate(i * halfW + xOffset, yOffset);
             doc.scale(scale);
-            drawOneBill(doc, cashBill, company);
+            drawOneBill(doc, cashBill, company, maxY);
             doc.restore();
          });
          doc.addPage = realAddPage;
-
-         // Cut guide between the two copies
-         doc.dash(4, { space: 3 }).lineWidth(0.75).strokeColor('#94A3B8');
-         doc.moveTo(halfW, 12).lineTo(halfW, pageH - 12).stroke();
-         doc.undash();
 
          doc.end();
       } catch (error) {

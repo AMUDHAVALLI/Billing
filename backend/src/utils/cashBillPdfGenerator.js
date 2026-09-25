@@ -5,20 +5,14 @@ import { amountInWords } from './gstCalculator.js';
 const LOGO_PATH = path.join(import.meta.dirname, '../assets/system-doctor-logo.png');
 
 /**
- * Generate Cash / Service Bill PDF
- * @param {Object} cashBill - The CashBill database record with items
- * @param {Object} [company] - Optional Company record for header details
+ * Draws one full bill using its own fixed coordinate system (as if onto a
+ * ~595x785 portrait canvas starting at the origin). Callers position it by
+ * wrapping the call in doc.save() / doc.translate() / doc.scale() / doc.restore()
+ * — the drawing code itself never needs to know where on the real page it
+ * ends up, which is what makes printing two copies on one landscape page
+ * just a matter of calling this twice instead of a second, parallel layout.
  */
-export async function generateCashBillPDF(cashBill, company = null) {
-   return new Promise((resolve, reject) => {
-      try {
-         const doc = new PDFDocument({ margin: 20, size: 'A4' });
-         const chunks = [];
-
-         doc.on('data', chunk => chunks.push(chunk));
-         doc.on('end', () => resolve(Buffer.concat(chunks)));
-         doc.on('error', reject);
-
+function drawOneBill(doc, cashBill, company) {
          // Default company details if none provided
          const compName = company?.name || 'Sri Balaji Computers';
          const compAddress = company?.address
@@ -238,6 +232,50 @@ export async function generateCashBillPDF(cashBill, company = null) {
 
          doc.font('Helvetica-Bold').fontSize(9).fillColor('#475569')
             .text('Authorised Signatory', endX - 220, maxY - 25, { width: 210, align: 'right' });
+}
+
+/**
+ * Generate Cash / Service Bill PDF — one A4 landscape page holding two
+ * copies of the same bill side by side (the usual "customer copy / office
+ * copy" printing convention), with a dashed cut guide down the middle.
+ * @param {Object} cashBill - The CashBill database record with items
+ * @param {Object} [company] - Optional Company record for header details
+ */
+export async function generateCashBillPDF(cashBill, company = null) {
+   return new Promise((resolve, reject) => {
+      try {
+         const doc = new PDFDocument({ margin: 0, size: 'A4', layout: 'landscape' });
+         const chunks = [];
+
+         doc.on('data', chunk => chunks.push(chunk));
+         doc.on('end', () => resolve(Buffer.concat(chunks)));
+         doc.on('error', reject);
+
+         // drawOneBill's own coordinate system is a ~595x785 portrait
+         // canvas. Scaling it down and translating it twice — once per
+         // half of the landscape page — prints two copies without a
+         // second, parallel layout to keep in sync with the first.
+         const pageW = doc.page.width;
+         const pageH = doc.page.height;
+         const halfW = pageW / 2;
+         const billW = 595;
+         const billH = 785;
+         const scale = 0.68;
+         const xOffset = (halfW - billW * scale) / 2;
+         const yOffset = (pageH - billH * scale) / 2;
+
+         [0, 1].forEach(i => {
+            doc.save();
+            doc.translate(i * halfW + xOffset, yOffset);
+            doc.scale(scale);
+            drawOneBill(doc, cashBill, company);
+            doc.restore();
+         });
+
+         // Cut guide between the two copies
+         doc.dash(4, { space: 3 }).lineWidth(0.75).strokeColor('#94A3B8');
+         doc.moveTo(halfW, 12).lineTo(halfW, pageH - 12).stroke();
+         doc.undash();
 
          doc.end();
       } catch (error) {

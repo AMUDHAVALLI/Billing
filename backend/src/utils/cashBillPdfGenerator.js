@@ -1,5 +1,8 @@
 import PDFDocument from 'pdfkit';
+import path from 'path';
 import { amountInWords } from './gstCalculator.js';
+
+const LOGO_PATH = path.join(import.meta.dirname, '../assets/system-doctor-logo.png');
 
 /**
  * Generate Cash / Service Bill PDF
@@ -49,6 +52,13 @@ export async function generateCashBillPDF(cashBill, company = null) {
          // --- TOP RIGHT: CELL NO ---
          doc.font('Helvetica-Bold').fontSize(10).fillColor('#0F172A')
             .text(`Cell : ${compPhone}`, endX - 180, topY + 12, { width: 170, align: 'right' });
+
+         // --- TOP LEFT LOGO ---
+         try {
+            doc.image(LOGO_PATH, startX + 8, topY + 6, { fit: [58, 45] });
+         } catch (err) {
+            // Missing/unreadable logo file shouldn't block the bill itself.
+         }
 
          // --- COMPANY HEADER DETAILS ---
          let headerY = topY + 35;
@@ -142,13 +152,6 @@ export async function generateCashBillPDF(cashBill, company = null) {
 
             itemY += rowHeight;
          });
-
-         // Hand-written style slash line for unused table space
-         if (itemY < tableBottom - 40) {
-            doc.lineWidth(0.8).strokeColor('#94A3B8');
-            doc.moveTo(cols.qty.x + 20, itemY + 15)
-               .lineTo(cols.amount.x - 10, tableBottom - 20).stroke();
-         }
 
          // --- FOOTER SECTION: TOTAL & RUPEES IN WORDS ---
          doc.lineWidth(1).strokeColor('#0F172A');

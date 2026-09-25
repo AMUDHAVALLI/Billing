@@ -264,6 +264,17 @@ export async function generateCashBillPDF(cashBill, company = null) {
          const xOffset = (halfW - billW * scale) / 2;
          const yOffset = (pageH - billH * scale) / 2;
 
+         // PDFKit's own text-flow bookkeeping decides whether to start a new
+         // page by checking raw y-coordinates against the real page height —
+         // it has no idea a scale() transform is about to shrink everything
+         // to fit, so drawOneBill's largest y-values (~760, meant for the
+         // *unscaled* 785-tall canvas) look like massive overflow on a
+         // 595-tall landscape page and it silently added a new page for
+         // nearly every text call. Every coordinate in drawOneBill is passed
+         // explicitly, so nothing actually depends on that bookkeeping —
+         // stubbing addPage out for the duration is a safe way to stop it.
+         const realAddPage = doc.addPage.bind(doc);
+         doc.addPage = () => doc;
          [0, 1].forEach(i => {
             doc.save();
             doc.translate(i * halfW + xOffset, yOffset);
@@ -271,6 +282,7 @@ export async function generateCashBillPDF(cashBill, company = null) {
             drawOneBill(doc, cashBill, company);
             doc.restore();
          });
+         doc.addPage = realAddPage;
 
          // Cut guide between the two copies
          doc.dash(4, { space: 3 }).lineWidth(0.75).strokeColor('#94A3B8');

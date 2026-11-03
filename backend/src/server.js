@@ -27,9 +27,10 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
   'https://billing-web-alpha.vercel.app',
+  'https://billease-frontend.vercel.app',
   ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()) : []),
 ];
-const VERCEL_PREVIEW_PATTERN = /^https:\/\/billing-web-[a-z0-9]+-amudhas-projects-8accd42e\.vercel\.app$/;
+const VERCEL_PREVIEW_PATTERN = /^https:\/\/(?:billing-web|billease-frontend)(?:-[a-z0-9-]+)?\.vercel\.app$/;
 
 // Middleware
 // This API is called cross-origin by the frontend on its own Vercel domain,

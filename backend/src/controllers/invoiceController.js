@@ -301,7 +301,7 @@ export async function downloadInvoicePDF(req, res) {
 // Get dashboard statistics
 export async function getDashboardStats(req, res) {
   try {
-    const [totalCustomers, totalProducts, totalInvoices, recentInvoices] = await Promise.all([
+    const [totalCustomers, totalProducts, totalInvoices, recentInvoices, totalRevenue] = await Promise.all([
       prisma.customer.count(),
       prisma.product.count(),
       prisma.invoice.count(),
@@ -311,14 +311,13 @@ export async function getDashboardStats(req, res) {
           customer: true
         },
         orderBy: { date: 'desc' }
+      }),
+      prisma.invoice.aggregate({
+        _sum: {
+          total: true
+        }
       })
     ]);
-
-    const totalRevenue = await prisma.invoice.aggregate({
-      _sum: {
-        total: true
-      }
-    });
 
     res.json({
       totalCustomers,

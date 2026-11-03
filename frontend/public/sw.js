@@ -1,4 +1,4 @@
-const CACHE = 'billease-shell-v1';
+const CACHE = 'billease-shell-v2';
 const SHELL = ['/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -14,7 +14,16 @@ self.addEventListener('activate', (event) => {
 });
 
 // Billing data must always be live — this service worker only satisfies
-// install criteria, it never serves stale invoices/customers from cache.
+// install criteria, it never serves stale invoices/customers from cache,
+// and never intercepts cross-origin API requests.
 self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin) {
+    return;
+  }
+  if (SHELL.includes(url.pathname)) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+  }
 });

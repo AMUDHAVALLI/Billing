@@ -90,6 +90,7 @@ export default function QuotationDetailPage() {
               <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Quotation Info</h2>
               <DetailRow label="Quotation No" value={quotation.quotationNumber} bold />
               <DetailRow label="Date" value={new Date(quotation.date).toLocaleDateString('en-IN')} />
+              <DetailRow label="Type" value={quotation.isGst === false ? 'Non-GST' : 'GST'} />
               <DetailRow
                 label="Status"
                 value={
@@ -131,23 +132,36 @@ export default function QuotationDetailPage() {
           <div className="w-full max-w-full overflow-x-auto bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
             <table className="w-full min-w-[700px] divide-y divide-gray-200">
               <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">HSN</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">Qty</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Rate (₹)</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">GST %</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Amount (₹)</th>
-                </tr>
+                {quotation.isGst === false ? (
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
+                    <th className="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase">Quantity</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Unit Price (₹)</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Amount (₹)</th>
+                  </tr>
+                ) : (
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">HSN</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">Qty</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Rate (₹)</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-center">GST %</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase text-right">Amount (₹)</th>
+                  </tr>
+                )}
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {quotation.items.map((item, index) => (
                   <tr key={index}>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{item.description}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 text-center">{item.hsnCode}</td>
+                    {quotation.isGst !== false && (
+                      <td className="px-6 py-4 text-sm text-gray-600 text-center">{item.hsnCode}</td>
+                    )}
                     <td className="px-6 py-4 text-sm text-gray-600 text-center">{item.quantity} {item.unit}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 text-right">₹{item.rate.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 text-center">{item.gstRate}%</td>
+                    {quotation.isGst !== false && (
+                      <td className="px-6 py-4 text-sm text-gray-600 text-center">{item.gstRate}%</td>
+                    )}
                     <td className="px-6 py-4 text-sm text-gray-900 font-semibold text-right">₹{item.amount.toFixed(2)}</td>
                   </tr>
                 ))}

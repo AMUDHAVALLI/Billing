@@ -84,7 +84,8 @@ export async function getQuotationById(req, res) {
 // Create quotation
 export async function createQuotation(req, res) {
   try {
-    const { companyId, customerId, items, date } = req.body;
+    const { companyId, customerId, items, date, isGst } = req.body;
+    const withGst = isGst !== false;
 
     // Get company and customer details
     const [company, customer] = await Promise.all([
@@ -96,9 +97,15 @@ export async function createQuotation(req, res) {
       return res.status(404).json({ error: 'Company or Customer not found' });
     }
 
-    // Calculate GST
+    const normalizedItems = items.map(item => ({
+      ...item,
+      hsnCode: item.hsnCode || '',
+      gstRate: withGst ? item.gstRate : 0
+    }));
+
+    // Calculate GST (when withGst is false, gstRate is 0 so taxes are 0)
     const calculation = calculateGST(
-      items,
+      normalizedItems,
       company.state,
       customer.state,
       company.stateCode,
@@ -132,6 +139,7 @@ export async function createQuotation(req, res) {
         date: date ? new Date(date) : new Date(),
         companyId,
         customerId,
+        isGst: withGst,
         subtotal: calculation.subtotal,
         cgst: calculation.cgst,
         sgst: calculation.sgst,
@@ -143,7 +151,7 @@ export async function createQuotation(req, res) {
           create: calculation.items.map(item => ({
             productId: item.productId,
             description: item.description,
-            hsnCode: item.hsnCode,
+            hsnCode: item.hsnCode || '',
             quantity: item.quantity,
             unit: item.unit,
             rate: item.rate,
@@ -190,9 +198,18 @@ export async function updateQuotation(req, res) {
       return res.status(404).json({ error: 'Quotation not found' });
     }
 
+    const withGst =
+      typeof quotationData.isGst === 'boolean'
+        ? quotationData.isGst
+        : existingQuotation.isGst !== false;
     const companyId = quotationData.companyId || existingQuotation.companyId;
     const customerId = quotationData.customerId || existingQuotation.customerId;
-    const finalItems = items || existingQuotation.items;
+    const rawItems = items || existingQuotation.items;
+    const finalItems = rawItems.map(item => ({
+      ...item,
+      hsnCode: item.hsnCode || '',
+      gstRate: withGst ? item.gstRate : 0
+    }));
 
     const [latestCompany, latestCustomer] = await Promise.all([
       prisma.company.findUnique({ where: { id: companyId } }),
@@ -221,6 +238,7 @@ export async function updateQuotation(req, res) {
       where: { id },
       data: {
         ...quotationData,
+        isGst: withGst,
         subtotal: calculation.subtotal,
         cgst: calculation.cgst,
         sgst: calculation.sgst,
@@ -231,7 +249,7 @@ export async function updateQuotation(req, res) {
           create: calculation.items.map(item => ({
             productId: item.productId,
             description: item.description,
-            hsnCode: item.hsnCode,
+            hsnCode: item.hsnCode || '',
             quantity: item.quantity,
             unit: item.unit,
             rate: item.rate,

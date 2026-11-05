@@ -116,14 +116,20 @@ export default function QuotationsPage() {
     },
     {
       header: 'Tax',
-      accessor: (row) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-700">₹{(row.cgst + row.sgst + row.igst).toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-gray-500">
-            {row.igst > 0 ? 'IGST' : 'CGST+SGST'}
-          </span>
-        </div>
-      )
+      accessor: (row) =>
+        row.isGst === false ? (
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-500">₹0</span>
+            <span className="text-[10px] text-gray-500">Non-GST</span>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-700">₹{(row.cgst + row.sgst + row.igst).toLocaleString('en-IN')}</span>
+            <span className="text-[10px] text-gray-500">
+              {row.igst > 0 ? 'IGST' : 'CGST+SGST'}
+            </span>
+          </div>
+        )
     },
     {
       header: 'Total',

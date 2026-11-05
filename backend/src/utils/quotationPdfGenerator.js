@@ -19,19 +19,30 @@ export async function generateQuotationPDF(quotation, company, customer) {
       const endX = 570; // A4 width is ~595.
       const width = endX - startX;
 
+      const isGst = quotation.isGst !== false;
+
       // Column Definitions (Total width ~545)
-      // SI No | Description | HSN/SAC | GST Rate | Quantity | Rate(Incl) | Rate | per | Amount
-      const cols = {
-        si: { x: startX, w: 25 },
-        desc: { x: startX + 25, w: 200 },
-        hsn: { x: startX + 225, w: 40 },
-        gst: { x: startX + 265, w: 30 },
-        qty: { x: startX + 295, w: 45 },
-        rateIncl: { x: startX + 340, w: 55 },
-        rate: { x: startX + 395, w: 55 },
-        per: { x: startX + 450, w: 35 },
-        amount: { x: startX + 485, w: 60 }
-      };
+      // GST: SI No | Description | HSN/SAC | GST Rate | Quantity | Rate(Incl) | Rate | per | Amount
+      // Non-GST: SI No | Description | QUANTITY | UNIT PRICE | AMOUNT
+      const cols = isGst
+        ? {
+            si: { x: startX, w: 25 },
+            desc: { x: startX + 25, w: 200 },
+            hsn: { x: startX + 225, w: 40 },
+            gst: { x: startX + 265, w: 30 },
+            qty: { x: startX + 295, w: 45 },
+            rateIncl: { x: startX + 340, w: 55 },
+            rate: { x: startX + 395, w: 55 },
+            per: { x: startX + 450, w: 35 },
+            amount: { x: startX + 485, w: 60 }
+          }
+        : {
+            si: { x: startX, w: 35 },
+            desc: { x: startX + 35, w: 280 },
+            qty: { x: startX + 315, w: 70 },
+            unitPrice: { x: startX + 385, w: 80 },
+            amount: { x: startX + 465, w: 80 }
+          };
 
       // Header lines
       doc.lineWidth(0.5);
@@ -155,28 +166,35 @@ export async function generateQuotationPDF(quotation, company, customer) {
       // Description
       doc.text('Description of Goods', cols.desc.x, headerY + 10, { width: cols.desc.w, align: 'center' });
 
-      // HSN/SAC
-      doc.text('HSN/SAC', cols.hsn.x, headerY + 10, { width: cols.hsn.w, align: 'center' });
+      if (isGst) {
+        // HSN/SAC
+        doc.text('HSN/SAC', cols.hsn.x, headerY + 10, { width: cols.hsn.w, align: 'center' });
 
-      // GST Rate
-      doc.text('GST', cols.gst.x, headerY, { width: cols.gst.w, align: 'center' });
-      doc.text('Rate', cols.gst.x, headerY + 10, { width: cols.gst.w, align: 'center' });
+        // GST Rate
+        doc.text('GST', cols.gst.x, headerY, { width: cols.gst.w, align: 'center' });
+        doc.text('Rate', cols.gst.x, headerY + 10, { width: cols.gst.w, align: 'center' });
 
-      // Quantity
-      doc.text('Quantity', cols.qty.x, headerY + 10, { width: cols.qty.w, align: 'center' });
+        // Quantity
+        doc.text('Quantity', cols.qty.x, headerY + 10, { width: cols.qty.w, align: 'center' });
 
-      // Rate (Incl Tax)
-      doc.text('Rate', cols.rateIncl.x, headerY, { width: cols.rateIncl.w, align: 'center' });
-      doc.text('(Incl. of Tax)', cols.rateIncl.x, headerY + 10, { width: cols.rateIncl.w, align: 'center' });
+        // Rate (Incl Tax)
+        doc.text('Rate', cols.rateIncl.x, headerY, { width: cols.rateIncl.w, align: 'center' });
+        doc.text('(Incl. of Tax)', cols.rateIncl.x, headerY + 10, { width: cols.rateIncl.w, align: 'center' });
 
-      // Rate
-      doc.text('Rate', cols.rate.x, headerY + 10, { width: cols.rate.w, align: 'center' });
+        // Rate
+        doc.text('Rate', cols.rate.x, headerY + 10, { width: cols.rate.w, align: 'center' });
 
-      // per
-      doc.text('per', cols.per.x, headerY + 10, { width: cols.per.w, align: 'center' });
+        // per
+        doc.text('per', cols.per.x, headerY + 10, { width: cols.per.w, align: 'center' });
 
-      // Amount
-      doc.text('Amount', cols.amount.x, headerY + 10, { width: cols.amount.w, align: 'center' });
+        // Amount
+        doc.text('Amount', cols.amount.x, headerY + 10, { width: cols.amount.w, align: 'center' });
+      } else {
+        // Non-GST Headers: QUANTITY | UNIT PRICE | AMOUNT
+        doc.text('QUANTITY', cols.qty.x, headerY + 10, { width: cols.qty.w, align: 'center' });
+        doc.text('UNIT PRICE', cols.unitPrice.x, headerY + 10, { width: cols.unitPrice.w, align: 'center' });
+        doc.text('AMOUNT', cols.amount.x, headerY + 10, { width: cols.amount.w, align: 'center' });
+      }
 
       doc.moveTo(startX, tableTop + headerHeight).lineTo(endX, tableTop + headerHeight).stroke();
 
@@ -196,17 +214,23 @@ export async function generateQuotationPDF(quotation, company, customer) {
 
         doc.text((i + 1).toString(), cols.si.x, y, { width: cols.si.w, align: 'center' });
         doc.text(item.description, cols.desc.x + 2, y, { width: cols.desc.w - 4 });
-        doc.text(item.hsnCode, cols.hsn.x, y, { width: cols.hsn.w, align: 'center' });
-        doc.text(`${item.gstRate} %`, cols.gst.x, y, { width: cols.gst.w, align: 'center' });
 
-        doc.text(`${item.quantity} ${item.unit}`, cols.qty.x, y, { width: cols.qty.w, align: 'center' });
+        if (isGst) {
+          doc.text(item.hsnCode, cols.hsn.x, y, { width: cols.hsn.w, align: 'center' });
+          doc.text(`${item.gstRate} %`, cols.gst.x, y, { width: cols.gst.w, align: 'center' });
+          doc.text(`${item.quantity} ${item.unit}`, cols.qty.x, y, { width: cols.qty.w, align: 'center' });
 
-        const rateIncl = item.rate * (1 + item.gstRate / 100);
-        doc.text(rateIncl.toFixed(2), cols.rateIncl.x, y, { width: cols.rateIncl.w, align: 'center' });
+          const rateIncl = item.rate * (1 + item.gstRate / 100);
+          doc.text(rateIncl.toFixed(2), cols.rateIncl.x, y, { width: cols.rateIncl.w, align: 'center' });
 
-        doc.text(item.rate.toFixed(2), cols.rate.x, y, { width: cols.rate.w, align: 'center' });
-        doc.text(item.unit, cols.per.x, y, { width: cols.per.w, align: 'center' });
-        doc.text(item.amount.toFixed(2), cols.amount.x, y, { width: cols.amount.w - 2, align: 'right' });
+          doc.text(item.rate.toFixed(2), cols.rate.x, y, { width: cols.rate.w, align: 'center' });
+          doc.text(item.unit, cols.per.x, y, { width: cols.per.w, align: 'center' });
+          doc.text(item.amount.toFixed(2), cols.amount.x, y, { width: cols.amount.w - 2, align: 'right' });
+        } else {
+          doc.text(`${item.quantity} ${item.unit || ''}`.trim(), cols.qty.x, y, { width: cols.qty.w, align: 'center' });
+          doc.text(item.rate.toFixed(2), cols.unitPrice.x, y, { width: cols.unitPrice.w, align: 'center' });
+          doc.text(item.amount.toFixed(2), cols.amount.x, y, { width: cols.amount.w - 4, align: 'right' });
+        }
 
         y += rowHeight;
       });
@@ -215,35 +239,41 @@ export async function generateQuotationPDF(quotation, company, customer) {
 
       // Totals
       y += 5;
-      const totalLabelX = cols.rateIncl.x;
+      const totalLabelX = isGst ? cols.rateIncl.x : cols.unitPrice.x;
+      const totalLabelW = isGst ? 60 : cols.unitPrice.w - 5;
       const totalValueX = cols.amount.x;
+      const totalValueW = cols.amount.w - (isGst ? 2 : 4);
 
-      if (quotation.cgst > 0) {
-        doc.font('Helvetica-Bold').text('CGST', totalLabelX, y, { align: 'right', width: 60 });
-        doc.font('Helvetica').text(quotation.cgst.toFixed(2), totalValueX, y, { align: 'right', width: cols.amount.w - 2 });
-        y += 12;
-        doc.font('Helvetica-Bold').text('SGST', totalLabelX, y, { align: 'right', width: 60 });
-        doc.font('Helvetica').text(quotation.sgst.toFixed(2), totalValueX, y, { align: 'right', width: cols.amount.w - 2 });
-        y += 12;
-      } else if (quotation.igst > 0) {
-        doc.font('Helvetica-Bold').text('IGST', totalLabelX, y, { align: 'right', width: 60 });
-        doc.font('Helvetica').text(quotation.igst.toFixed(2), totalValueX, y, { align: 'right', width: cols.amount.w - 2 });
-        y += 12;
+      if (isGst) {
+        if (quotation.cgst > 0) {
+          doc.font('Helvetica-Bold').text('CGST', totalLabelX, y, { align: 'right', width: totalLabelW });
+          doc.font('Helvetica').text(quotation.cgst.toFixed(2), totalValueX, y, { align: 'right', width: totalValueW });
+          y += 12;
+          doc.font('Helvetica-Bold').text('SGST', totalLabelX, y, { align: 'right', width: totalLabelW });
+          doc.font('Helvetica').text(quotation.sgst.toFixed(2), totalValueX, y, { align: 'right', width: totalValueW });
+          y += 12;
+        } else if (quotation.igst > 0) {
+          doc.font('Helvetica-Bold').text('IGST', totalLabelX, y, { align: 'right', width: totalLabelW });
+          doc.font('Helvetica').text(quotation.igst.toFixed(2), totalValueX, y, { align: 'right', width: totalValueW });
+          y += 12;
+        }
       }
 
       if (quotation.roundOff) {
-        doc.font('Helvetica-Bold').text('ROUND OFF', totalLabelX, y, { align: 'right', width: 60 });
-        doc.font('Helvetica').text(quotation.roundOff.toFixed(2), totalValueX, y, { align: 'right', width: cols.amount.w - 2 });
+        doc.font('Helvetica-Bold').text('ROUND OFF', totalLabelX, y, { align: 'right', width: totalLabelW });
+        doc.font('Helvetica').text(quotation.roundOff.toFixed(2), totalValueX, y, { align: 'right', width: totalValueW });
         y += 12;
       }
 
-      doc.moveTo(startX, y).lineTo(endX, y).stroke();
-      y += 5;
+      if (isGst || quotation.roundOff) {
+        doc.moveTo(startX, y).lineTo(endX, y).stroke();
+        y += 5;
+      }
 
       // Grand Total
       doc.font('Helvetica-Bold').fontSize(11);
-      doc.text('Total', totalLabelX, y, { align: 'right', width: 60 });
-      doc.text(quotation.total.toFixed(2), totalValueX, y, { align: 'right', width: cols.amount.w - 2 });
+      doc.text('Total', totalLabelX, y, { align: 'right', width: totalLabelW });
+      doc.text(quotation.total.toFixed(2), totalValueX, y, { align: 'right', width: totalValueW });
 
       // Amount in words
       const paddedLeftX = startX + 5;

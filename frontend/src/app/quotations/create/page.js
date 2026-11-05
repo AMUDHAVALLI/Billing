@@ -21,6 +21,7 @@ export default function CreateQuotationPage() {
     companyId: '',
     customerId: '',
     date: new Date().toISOString().split('T')[0],
+    isGst: true,
     items: []
   });
 
@@ -128,6 +129,7 @@ export default function CreateQuotationPage() {
 
   const calculateItemTotal = (item) => {
     const amount = item.rate * item.quantity;
+    if (!formData.isGst) return amount;
     const gstAmount = (amount * item.gstRate) / 100;
     return amount + gstAmount;
   };
@@ -144,7 +146,7 @@ export default function CreateQuotationPage() {
         <div className="p-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Quotation</h1>
-            <p className="text-gray-600">Generate a new GST-compliant quotation</p>
+            <p className="text-gray-600">Generate a new quotation</p>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -187,9 +189,22 @@ export default function CreateQuotationPage() {
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Add Items</h2>
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Add Items</h2>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-semibold text-gray-700">Calculation Type:</label>
+                  <select
+                    value={formData.isGst ? 'gst' : 'non-gst'}
+                    onChange={(e) => setFormData({ ...formData, isGst: e.target.value === 'gst' })}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                  >
+                    <option value="gst">GST</option>
+                    <option value="non-gst">Non-GST</option>
+                  </select>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-6 gap-4 mb-4">
+              <div className={`grid ${formData.isGst ? 'grid-cols-6' : 'grid-cols-5'} gap-4 mb-4`}>
                 <div className="col-span-2">
                   <ProductSearchableSelect
                     products={products}
@@ -198,11 +213,13 @@ export default function CreateQuotationPage() {
                   />
                 </div>
 
-                <Input
-                  label="HSN Code"
-                  value={newItem.hsnCode}
-                  onChange={(e) => setNewItem({ ...newItem, hsnCode: e.target.value })}
-                />
+                {formData.isGst && (
+                  <Input
+                    label="HSN Code"
+                    value={newItem.hsnCode}
+                    onChange={(e) => setNewItem({ ...newItem, hsnCode: e.target.value })}
+                  />
+                )}
 
                 <Input
                   label="Quantity"
@@ -213,7 +230,7 @@ export default function CreateQuotationPage() {
                 />
 
                 <Input
-                  label="Rate (₹)"
+                  label={formData.isGst ? 'Rate (₹)' : 'Unit Price (₹)'}
                   type="number"
                   step="0.01"
                   value={newItem.rate}
@@ -232,24 +249,38 @@ export default function CreateQuotationPage() {
                 <div className="mt-6 overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200 border rounded-lg">
                     <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">HSN</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Qty</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Rate</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">GST</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Action</th>
-                      </tr>
+                      {formData.isGst ? (
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">HSN</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Qty</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Rate</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">GST</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Amount</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Action</th>
+                        </tr>
+                      ) : (
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Item</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Quantity</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Unit Price</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Amount</th>
+                          <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Action</th>
+                        </tr>
+                      )}
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {formData.items.map((item, index) => (
                         <tr key={index}>
                           <td className="px-4 py-3 text-sm">{item.description}</td>
-                          <td className="px-4 py-3 text-sm">{item.hsnCode}</td>
+                          {formData.isGst && (
+                            <td className="px-4 py-3 text-sm">{item.hsnCode}</td>
+                          )}
                           <td className="px-4 py-3 text-sm">{item.quantity} {item.unit}</td>
                           <td className="px-4 py-3 text-sm">₹{item.rate.toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm">{item.gstRate}%</td>
+                          {formData.isGst && (
+                            <td className="px-4 py-3 text-sm">{item.gstRate}%</td>
+                          )}
                           <td className="px-4 py-3 text-sm font-semibold">₹{calculateItemTotal(item).toFixed(2)}</td>
                           <td className="px-4 py-3 text-sm">
                             <button
@@ -270,7 +301,11 @@ export default function CreateQuotationPage() {
                       <p className="text-2xl font-bold text-gray-900">
                         Estimated Total: <span className="text-primary-700">₹{calculateGrandTotal().toFixed(2)}</span>
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">Final amount will include GST calculation and round-off</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {formData.isGst
+                          ? 'Final amount will include GST calculation and round-off'
+                          : 'Non-GST calculation (Quantity × Unit Price)'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -297,4 +332,3 @@ export default function CreateQuotationPage() {
     </div>
   );
 }
-

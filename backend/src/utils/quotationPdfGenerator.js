@@ -283,19 +283,7 @@ export async function generateQuotationPDF(quotation, company, customer) {
 
       doc.text('DELIVERY', termsX, currentTermsY);
       doc.text(': 2 Days.', termColonX, currentTermsY);
-      currentTermsY += 18;
-
-      doc.font('Times-Roman').fontSize(10);
-      doc.text('We assure you always the best service in time.', termsX, currentTermsY, {
-        width: termsWidth,
-        align: 'center'
-      });
-      currentTermsY += 13;
-      doc.text('Thanking you,', termsX, currentTermsY, {
-        width: termsWidth,
-        align: 'center'
-      });
-      currentTermsY += 12;
+      currentTermsY += 15;
 
       // Column 2: Bank Details (Right Side)
       let currentBankY = footerStartY;
@@ -320,8 +308,21 @@ export async function generateQuotationPDF(quotation, company, customer) {
         currentBankY += 12;
       }
 
-      // Next section starts below the tallest column
-      y = Math.max(currentTermsY, currentBankY) + 15;
+      // Centered closing message across the full quotation width
+      let closingY = Math.max(currentTermsY, currentBankY) + 10;
+      doc.font('Times-Roman').fontSize(10);
+      doc.text('We assure you always the best service in time.', startX, closingY, {
+        width,
+        align: 'center'
+      });
+      closingY += 13;
+      doc.text('Thanking you,', startX, closingY, {
+        width,
+        align: 'center'
+      });
+
+      // Next section starts below the closing text
+      y = closingY + 20;
 
       // Signatures
       doc.font('Helvetica').fontSize(9);

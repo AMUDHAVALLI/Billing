@@ -79,6 +79,7 @@ export default function Sidebar() {
     { name: 'Customers', href: '/customers', icon: '👥' },
     { name: 'Products', href: '/products', icon: '📦' },
     { name: 'Invoices', href: '/invoices', icon: '📄' },
+    { name: 'Quotations', href: '/quotations', icon: '📋' },
     { name: 'Cash / Service Bills', href: '/cash-bills', icon: '🧾' },
     { name: 'Monthly Report', href: '/reports/monthly', icon: '📅' },
     { name: 'Yearly Report', href: '/reports/yearly', icon: '📈' },

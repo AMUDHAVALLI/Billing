@@ -7,6 +7,7 @@ import companyRoutes from './routes/companyRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
+import quotationRoutes from './routes/quotationRoutes.js';
 import cashBillRoutes from './routes/cashBillRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requireAuth } from './middleware/auth.js';
@@ -61,6 +62,7 @@ app.use('/api/companies', requireAuth, companyRoutes);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/products', requireAuth, productRoutes);
 app.use('/api/invoices', requireAuth, invoiceRoutes);
+app.use('/api/quotations', requireAuth, quotationRoutes);
 app.use('/api/cash-bills', requireAuth, cashBillRoutes);
 
 // Health check

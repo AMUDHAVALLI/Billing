@@ -32,40 +32,43 @@ model Company {
   ifscCode      String?
   branch        String?
   logo          String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   invoices      Invoice[]
+  quotations    Quotation[]
 }
 
 model Customer {
-  id        String    @id @default(uuid())
-  name      String
-  address   String
-  city      String
-  state     String
-  stateCode String
-  gstin     String?
-  contact   String?
-  email     String?
-  phone     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  invoices  Invoice[]
+  id         String      @id @default(uuid())
+  name       String
+  address    String
+  city       String
+  state      String
+  stateCode  String
+  gstin      String?
+  contact    String?
+  email      String?
+  phone      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  invoices   Invoice[]
+  quotations Quotation[]
 
   @@index([name])
 }
 
 model Product {
-  id          String        @id @default(uuid())
-  name        String
-  description String?
-  hsnCode     String
-  unit        String        @default("NOS")
-  basePrice   Float
-  gstRate     Float
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  invoiceItems InvoiceItem[]
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  hsnCode        String
+  unit           String          @default("NOS")
+  basePrice      Float
+  gstRate        Float
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  invoiceItems   InvoiceItem[]
+  quotationItems QuotationItem[]
 
   @@index([name])
 }
@@ -139,5 +142,48 @@ model CashBillItem {
   cashBill    CashBill @relation(fields: [cashBillId], references: [id], onDelete: Cascade)
 
   @@index([cashBillId])
+}
+
+model Quotation {
+  id              String          @id @default(uuid())
+  quotationNumber String          @unique
+  date            DateTime        @default(now())
+  companyId       String
+  customerId      String
+  subtotal        Float
+  cgst            Float           @default(0)
+  sgst            Float           @default(0)
+  igst            Float           @default(0)
+  roundOff        Float           @default(0)
+  total           Float
+  status          String          @default("draft")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  company         Company         @relation(fields: [companyId], references: [id])
+  customer        Customer        @relation(fields: [customerId], references: [id])
+  items           QuotationItem[]
+
+  @@index([quotationNumber])
+  @@index([date])
+}
+
+model QuotationItem {
+  id          String    @id @default(uuid())
+  quotationId String
+  productId   String
+  description String
+  hsnCode     String
+  quantity    Float
+  unit        String
+  rate        Float
+  amount      Float
+  gstRate     Float
+  gstAmount   Float
+
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@index([quotationId])
 }
 

@@ -85,6 +85,16 @@ export const invoiceAPI = {
   getTaxReport: (month, year) => api.get('/invoices/reports/tax', { params: { month, year } }),
 };
 
+// Quotation API
+export const quotationAPI = {
+  getAll: (params) => api.get('/quotations', { params }),
+  getById: (id) => api.get(`/quotations/${id}`),
+  create: (data) => api.post('/quotations', data),
+  update: (id, data) => api.put(`/quotations/${id}`, data),
+  delete: (id) => api.delete(`/quotations/${id}`),
+  downloadPDF: (id) => api.get(`/quotations/${id}/pdf`, { responseType: 'blob' }),
+};
+
 // Cash Bill API
 export const cashBillAPI = {
   getAll: (params) => api.get('/cash-bills', { params }),

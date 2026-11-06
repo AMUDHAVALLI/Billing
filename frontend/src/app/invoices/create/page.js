@@ -129,7 +129,7 @@ export default function CreateInvoicePage() {
   const calculateItemTotal = (item) => {
     const amount = item.rate * item.quantity;
     const gstAmount = (amount * item.gstRate) / 100;
-    return amount + gstAmount;
+    return amount - gstAmount;
   };
 
   const calculateGrandTotal = () => {
@@ -248,9 +248,9 @@ export default function CreateInvoicePage() {
                           <td className="px-4 py-3 text-sm">{item.description}</td>
                           <td className="px-4 py-3 text-sm">{item.hsnCode}</td>
                           <td className="px-4 py-3 text-sm">{item.quantity} {item.unit}</td>
-                          <td className="px-4 py-3 text-sm">₹{item.rate.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm">₹{calculateItemTotal(item).toFixed(2)}</td>
                           <td className="px-4 py-3 text-sm">{item.gstRate}%</td>
-                          <td className="px-4 py-3 text-sm font-semibold">₹{calculateItemTotal(item).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm font-semibold">₹{item.rate.toFixed(2)}</td>
                           <td className="px-4 py-3 text-sm">
                             <button
                               type="button"

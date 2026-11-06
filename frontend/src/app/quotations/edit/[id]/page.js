@@ -155,7 +155,7 @@ export default function EditQuotationPage({ params }) {
     const amount = item.rate * item.quantity;
     if (!formData.isGst) return amount;
     const gstAmount = (amount * item.gstRate) / 100;
-    return amount + gstAmount;
+    return amount - gstAmount;
   };
 
   const calculateGrandTotal = () => {
@@ -316,11 +316,15 @@ export default function EditQuotationPage({ params }) {
                             <td className="px-4 py-3 text-sm">{item.hsnCode}</td>
                           )}
                           <td className="px-4 py-3 text-sm">{item.quantity} {item.unit}</td>
-                          <td className="px-4 py-3 text-sm">₹{item.rate.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm">
+                            ₹{formData.isGst ? calculateItemTotal(item).toFixed(2) : item.rate.toFixed(2)}
+                          </td>
                           {formData.isGst && (
                             <td className="px-4 py-3 text-sm">{item.gstRate}%</td>
                           )}
-                          <td className="px-4 py-3 text-sm font-semibold">₹{calculateItemTotal(item).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm font-semibold">
+                            ₹{formData.isGst ? item.rate.toFixed(2) : calculateItemTotal(item).toFixed(2)}
+                          </td>
                           <td className="px-4 py-3 text-sm">
                             <button
                               type="button"
